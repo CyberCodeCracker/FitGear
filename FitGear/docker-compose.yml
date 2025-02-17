@@ -1,0 +1,35 @@
+services:
+  postgres:
+    container_name: postgres-sql-fg
+    image: postgres:13
+    environment:
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgresSec
+      PGDATA: /var/lib/postgresql/data
+      POSTGRES_DB: fit_gear
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - fit_gear
+    restart:
+      unless-stopped
+
+  mail-dev:
+    container_name: mail-dev-fg
+    image: maildev/maildev:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 1025:1025
+      - 1080:1080
+
+networks:
+  fit_gear:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+
