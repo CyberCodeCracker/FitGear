@@ -3,6 +3,7 @@ package com.amouri_coding.FitGear.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,10 +31,11 @@ public class JwtService {
     @Value("${spring.application.security.jwt.refresh-expiration}")
     private Long refreshTokenExpiration;
 
-    private final PrivateKey privateKey;
-    private final PublicKey publicKey;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
 
-    public JwtService() throws Exception {
+    @PostConstruct
+    public void initKeys() throws Exception {
         this.privateKey = loadPrivatekey("src/main/resources/keys/private.pem");
         this.publicKey = loadPublicKey("src/main/resources/keys/public.pem");
     }
@@ -79,26 +81,27 @@ public class JwtService {
     }
 
     public String generateAccessToken(UserDetails userDetails) {
-        return generateAccessToken(new HashMap<String, Object>(), userDetails);
+        return buildToken(new HashMap<>(), userDetails, accessTokenExpiration);
     }
 
-    private String generateAccessToken(Map<String, Object> claims, UserDetails userDetails) {
-        return buildToken(claims, userDetails, 1000 * 60 * 60 * 24);
+    public String generateRefreshToken(UserDetails userDetails) {
+        return buildToken(new HashMap<>(), userDetails, refreshTokenExpiration);
     }
 
-    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long jwtExpiration) {
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long tokenExpiration) {
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .setExpiration(new Date(System.currentTimeMillis() + tokenExpiration))
                 .signWith(privateKey, SignatureAlgorithm.RS256)
-                .compact();
+                .compact()
+                ;
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && isTokenExpired(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

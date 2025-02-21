@@ -1,5 +1,6 @@
 package com.amouri_coding.FitGear.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -48,6 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             final String token = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(token);
+
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
                 if (jwtService.isTokenValid(token, userDetails)) {
@@ -58,9 +60,10 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT is expired: {}", e.getMessage());
         } catch (JwtException | UsernameNotFoundException e) {
             log.warn("JWT authentication failed: {}", e.getMessage());
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }
 
