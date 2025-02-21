@@ -1,6 +1,6 @@
 package com.amouri_coding.FitGear.security;
 
-import com.amouri_coding.FitGear.user.User;
+import com.amouri_coding.FitGear.user.UserBaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 
@@ -30,13 +30,13 @@ public class Token {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserBaseEntity user;
 
     public Token() {
 
     }
 
-    public Token(Long id, String token,TokenType tokenType , LocalDateTime issuedAt, LocalDateTime expiresAt, LocalDateTime validatedAt, User user) {
+    public Token(Long id, String token,TokenType tokenType , LocalDateTime issuedAt, LocalDateTime expiresAt, LocalDateTime validatedAt, UserBaseEntity user) {
         this.id = id;
         this.token = token;
         this.tokenType = tokenType;
@@ -94,7 +94,7 @@ public class Token {
         return this.validatedAt;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserBaseEntity user) {
         this.user = user;
     }
 
