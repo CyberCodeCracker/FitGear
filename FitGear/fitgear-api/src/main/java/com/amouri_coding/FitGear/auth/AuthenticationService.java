@@ -31,7 +31,7 @@ public class AuthenticationService {
         return jwtService.generateRefreshToken(userDetails);
     }
 
-    public void register(Map<String, String> request, HttpServletResponse response) {
+    public void registerCoach(CoachRegistrationRequest request, HttpServletResponse response) {
 
     }
 }

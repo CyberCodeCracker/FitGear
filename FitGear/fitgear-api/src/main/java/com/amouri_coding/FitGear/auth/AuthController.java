@@ -31,13 +31,13 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register/coach")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> register(
-            @RequestBody @Valid RegistrationRequest request,
+            @RequestBody @Valid CoachRegistrationRequest request,
             HttpServletResponse response
     ) {
-        authService.register(request, response);
+        authService.registerCoach(request, response);
         return ResponseEntity.accepted().build();
     }
 }

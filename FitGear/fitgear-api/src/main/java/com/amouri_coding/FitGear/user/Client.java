@@ -1,5 +1,6 @@
 package com.amouri_coding.FitGear.user;
 
+import com.amouri_coding.FitGear.coach.Coach;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
