@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +25,7 @@ import java.io.IOException;
 @Service
 @AllArgsConstructor
 @Slf4j
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -35,9 +38,22 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws IOException, ServletException {
 
-        if (request.getServletPath().contains("api/v1/auth")) {
-            filterChain.doFilter(request, response);
-            return;
+        log.info("JwtFilter: Processing request");
+        log.info("Request URI: {}", request.getRequestURI());
+        log.info("Servlet Path: {}", request.getServletPath());
+        log.info("Context Path: {}", request.getContextPath());
+        log.info("Request Method: {}", request.getMethod());
+
+        try {
+            if (request.getRequestURI().contains("/api/v1/auth")) {
+                System.out.println("Passing through auth endpoint");
+                filterChain.doFilter(request, response);
+                System.out.println("Finished passing through auth endpoint");
+                return;
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw e;
         }
 
         final String authHeader = request.getHeader("Authorization");

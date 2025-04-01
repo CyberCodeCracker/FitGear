@@ -1,15 +1,13 @@
 package com.amouri_coding.FitGear.user;
 
 import com.amouri_coding.FitGear.coach.Coach;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
@@ -17,7 +15,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class Client extends UserBaseEntity {
+@Table(name = "client")
+@DiscriminatorValue("CLIENT")
+@PrimaryKeyJoinColumn(name = "user_id")
+@EntityListeners(AuditingEntityListener.class)
+public class Client extends User {
 
     @Column(nullable = false)
     private double height;

@@ -1,5 +1,6 @@
 package com.amouri_coding.FitGear.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
@@ -46,8 +47,14 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilter(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                    System.err.println("Authentication Entry Point Called");
+                    System.err.println("Request URL: " + request.getRequestURL());
+                    System.err.println("Authentication Exception: " + authException.getMessage());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                }))
+                .build()
                 ;
-        return http.build();
     }
 }

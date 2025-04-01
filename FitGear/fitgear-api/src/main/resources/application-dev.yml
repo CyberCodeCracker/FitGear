@@ -1,15 +1,13 @@
 spring:
-  config:
-    import: file:.env
   datasource:
     url: jdbc:postgresql://localhost:5432/fit_gear
     username: postgres
-    password: postgresSec
+    password: admin
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
@@ -21,6 +19,10 @@ spring:
       jwt:
         access-expiration: 900000
         refresh-expiration: 604800000
+    mail:
+      from-email: souhailamouri123@gmail.com
+      frontend:
+        activation-url: http://localhost:4200/activate-account
 
   mail:
     host: localhost

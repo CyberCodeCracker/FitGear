@@ -1,5 +1,7 @@
 package com.amouri_coding.FitGear.auth;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth")
 public class AuthController {
 
     private final AuthenticationService authService;
@@ -36,7 +39,7 @@ public class AuthController {
     public ResponseEntity<?> register(
             @RequestBody @Valid CoachRegistrationRequest request,
             HttpServletResponse response
-    ) {
+    ) throws MessagingException {
         authService.registerCoach(request, response);
         return ResponseEntity.accepted().build();
     }

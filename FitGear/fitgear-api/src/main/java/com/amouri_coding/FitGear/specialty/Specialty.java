@@ -1,5 +1,6 @@
-package com.amouri_coding.FitGear.coach;
+package com.amouri_coding.FitGear.specialty;
 
+import com.amouri_coding.FitGear.coach.Coach;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,18 +14,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Certification {
+public class Specialty {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String certificateUrl;
-
-    @ManyToMany(mappedBy = "certifications")
+    @ManyToMany(mappedBy = "specialties")
     private List<Coach> coaches;
 }

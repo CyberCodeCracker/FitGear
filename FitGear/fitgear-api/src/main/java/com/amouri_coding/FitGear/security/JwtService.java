@@ -36,16 +36,30 @@ public class JwtService {
 
     @PostConstruct
     public void initKeys() throws Exception {
-        this.privateKey = loadPrivatekey("src/main/resources/keys/private.pem");
-        this.publicKey = loadPublicKey("src/main/resources/keys/public.pem");
+
+        try {
+            this.privateKey = loadPrivatekey("FitGear/fitgear-api/src/main/resources/keys/private.pem");
+            this.publicKey = loadPublicKey("FitGear/fitgear-api/src/main/resources/keys/public.pem");
+
+            System.out.println("Private Key Loaded: " + (privateKey != null));
+            System.out.println("Public key Loaded: " + (publicKey != null));
+            System.out.println("Private Key Algorithm: " + (privateKey != null ? privateKey.getAlgorithm() : "N/A"));
+            System.out.println("Public Key Algoritm: " + (publicKey != null ? publicKey.getAlgorithm() : "N/A"));
+        } catch (Exception e) {
+            System.err.println("Error loading keys: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+
     }
 
     private PrivateKey loadPrivatekey(String path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(Paths.get(path));
-        String keyString = new String(keyBytes)
-                .replace("-----BEGIN PRIVATE KEY-----", "")
+        String keyString = new String(keyBytes);
+        keyString = keyString.replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s", "");
+                .replaceAll("\\s", "")
+                .replaceAll("\n", "");
         byte[] decodedKey = java.util.Base64.getDecoder().decode(keyString);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
         return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
@@ -53,10 +67,11 @@ public class JwtService {
 
     private PublicKey loadPublicKey(String path) throws Exception {
         byte[] keyBytes = Files.readAllBytes(Paths.get(path));
-        String keyString = new String(keyBytes)
-                .replace("-----BEGIN PUBLIC KEY-----", "")
+        String keyString = new String(keyBytes);
+        keyString = keyString.replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s", "");
+                .replaceAll("\\s", "")
+                .replaceAll("\n", "");
         byte[] decodedKey = java.util.Base64.getDecoder().decode(keyString);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedKey);
         return KeyFactory.getInstance("RSA").generatePublic(keySpec);

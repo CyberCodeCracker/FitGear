@@ -1,12 +1,10 @@
 package com.amouri_coding.FitGear.auth;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Setter
 @Getter
@@ -23,8 +21,6 @@ public class CoachRegistrationRequest {
     @Email(message = "Invalid email format")
     private String coachEmail;
 
-    private String coachProfilePicture;
-
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password should be at least 8 characters long")
     private String coachPassword;
@@ -35,25 +31,21 @@ public class CoachRegistrationRequest {
 
     @NotBlank(message = "Password confirmation is required")
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
-    @Max(value = 8, message = "Phone number is too long")
-    private String coachPhoneNumber;
+    @Max(value = 99999999, message = "Phone number is not valid")
+    @Size(max = 8, message = "Phone number is too long")
+    @Column(nullable = false)
+    private String phoneNumber;
 
     @NotBlank(message = "Description is required")
-    private String coachDescription;
+    @Column(length = 2048, nullable = false)
+    private String description;
 
-    @Min(value = 0, message = "Years of experience msut be positive")
+    @Min(value = 0, message = "Years of experience must be positive")
+    @Column(nullable = false)
     private int yearsOfExperience;
 
-    @NotNull(message = "specialties are required")
-    private List<Long> specialtiesIds;
-
-    @NotNull(message = "certifications are required")
-    private List<Long> certificationsIds;
-
     @Positive(message = "Monthly rate must be a positive number")
+    @Column(nullable = false)
     private double monthlyRate;
-
-    private String profilePicture;
-
 
 }

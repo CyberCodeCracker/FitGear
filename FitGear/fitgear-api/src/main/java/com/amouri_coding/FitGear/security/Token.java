@@ -1,6 +1,6 @@
 package com.amouri_coding.FitGear.security;
 
-import com.amouri_coding.FitGear.user.UserBaseEntity;
+import com.amouri_coding.FitGear.user.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 
@@ -14,7 +14,7 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private Long id;
-    @Column(name = "TOKEN",unique = true, nullable = false)
+    @Column(name = "TOKEN",unique = true, nullable = false, length = 2048)
     private String token;
 
     @Enumerated(EnumType.STRING)
@@ -29,14 +29,18 @@ public class Token {
     private LocalDateTime validatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserBaseEntity user;
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false)
+    private UserType userType;
 
     public Token() {
 
     }
 
-    public Token(Long id, String token,TokenType tokenType , LocalDateTime issuedAt, LocalDateTime expiresAt, LocalDateTime validatedAt, UserBaseEntity user) {
+    public Token(Long id, String token,TokenType tokenType , LocalDateTime issuedAt, LocalDateTime expiresAt, LocalDateTime validatedAt, User user, UserType userType) {
         this.id = id;
         this.token = token;
         this.tokenType = tokenType;
@@ -44,6 +48,7 @@ public class Token {
         this.expiresAt = expiresAt;
         this.validatedAt = validatedAt;
         this.user = user;
+        this.userType = userType;
     }
 
     public void setId(Long id) {
@@ -94,7 +99,7 @@ public class Token {
         return this.validatedAt;
     }
 
-    public void setUser(UserBaseEntity user) {
+    public void setUser(User user) {
         this.user = user;
     }
 
@@ -102,5 +107,11 @@ public class Token {
         return this.user.getId();
     }
 
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
 
+    public UserType getUserType() {
+        return this.userType;
+    }
 }
