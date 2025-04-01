@@ -3,6 +3,7 @@ package com.amouri_coding.FitGear.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.mail.javamail.MimeMessageHelper.MULTIPART_MODE_MIXED;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -40,7 +42,7 @@ public class EmailService {
         if (emailTemplateName == null) {
             templateName = "confirm-account";
         } else {
-            templateName = emailTemplateName.name();
+            templateName = emailTemplateName.getName();
         }
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();

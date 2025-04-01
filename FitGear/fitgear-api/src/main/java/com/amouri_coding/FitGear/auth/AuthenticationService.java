@@ -148,6 +148,7 @@ public class AuthenticationService {
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
                 .tokenType(TokenType.BEARER)
+                .userType(UserType.COACH)
                 .user(coach)
                 .build()
                 ;
