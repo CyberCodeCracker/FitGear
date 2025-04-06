@@ -1,5 +1,6 @@
 package com.amouri_coding.FitGear.security;
 
+import com.amouri_coding.FitGear.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,8 +97,8 @@ public class JwtService {
                 ;
     }
 
-    public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, accessTokenExpiration);
+    public String generateAccessToken(Map<String, Object> claims,UserDetails userDetails) {
+        return buildToken(claims, userDetails, accessTokenExpiration);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {

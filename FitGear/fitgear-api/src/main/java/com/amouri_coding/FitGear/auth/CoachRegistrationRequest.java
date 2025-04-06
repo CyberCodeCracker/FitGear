@@ -2,13 +2,13 @@ package com.amouri_coding.FitGear.auth;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CoachRegistrationRequest {
 
     @NotBlank(message = "First name is required")
@@ -22,11 +22,11 @@ public class CoachRegistrationRequest {
     private String coachEmail;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password should be at least 8 characters long")
+    @Size(min = 8, max = 20, message = "Password should be between 8 and 20 characters long")
     private String coachPassword;
 
     @NotBlank(message = "Password confirmation is required")
-    @Size(min = 8, message = "Password should be at least 8 characters long")
+    @Size(min = 8, max = 20, message = "Password should be between 8 and 20 characters long")
     private String coachPasswordConfirm;
 
     @NotBlank(message = "Password confirmation is required")

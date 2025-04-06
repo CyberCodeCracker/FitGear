@@ -29,11 +29,11 @@ public class Token {
     private LocalDateTime validatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "USER_ID")
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_type", nullable = false)
+    @Column(name = "USER_TYPE", nullable = false)
     private UserType userType;
 
     public Token() {
@@ -103,8 +103,8 @@ public class Token {
         this.user = user;
     }
 
-    public Long getUser() {
-        return this.user.getId();
+    public User getUser() {
+        return this.user;
     }
 
     public void setUserType(UserType userType) {

@@ -1,6 +1,7 @@
 package com.amouri_coding.FitGear.role;
 
 import com.amouri_coding.FitGear.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,10 +28,12 @@ public class UserRole {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @LastModifiedDate
     @Column(insertable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
     @ManyToMany(mappedBy = "roles")

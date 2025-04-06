@@ -20,11 +20,11 @@ public class AuthController {
     private final AuthenticationService authService;
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Map<String, String>> refreshToken(
-            @RequestBody Map<String, String> request
+    public ResponseEntity<Map<String, String>> generateRefreshToken(
+            @RequestBody RefreshTokenRequest request
     ) {
         try {
-            String refreshToken = request.get("refresh_token");
+            String refreshToken = request.getRefreshToken();
             authService.refreshToken(refreshToken);
             return ResponseEntity.ok(Map.of("token", refreshToken));
         } catch (IllegalArgumentException e) {
@@ -43,5 +43,21 @@ public class AuthController {
         authService.registerCoach(request, response);
         return ResponseEntity.accepted().build();
     }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestBody @Valid AuthenticationRequest request
+    ) {
+        return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @GetMapping("/confirm-account")
+    public void confirmAccount(
+            @RequestParam String token
+    ) throws MessagingException {
+        authService.confirmAccount(token);
+    }
+
+
 }
 

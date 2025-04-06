@@ -12,7 +12,7 @@
 	<artifactId>FitGear</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>FitGear</name>
-	<description>Web platform that fascilitates online coaching</description>
+	<description>Web platform that facilitates online coaching</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -106,6 +106,12 @@
 			<groupId>me.paulschwarz</groupId>
 			<artifactId>spring-dotenv</artifactId>
 			<version>4.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.18.2</version>
 		</dependency>
 
 	</dependencies>

@@ -4,24 +4,37 @@ import com.amouri_coding.FitGear.coach.Coach;
 import com.amouri_coding.FitGear.coach.CoachRepository;
 import com.amouri_coding.FitGear.email.EmailService;
 import com.amouri_coding.FitGear.email.EmailTemplateName;
+import com.amouri_coding.FitGear.exception.InvalidTokenException;
+import com.amouri_coding.FitGear.role.UserRole;
 import com.amouri_coding.FitGear.role.UserRoleRepository;
 import com.amouri_coding.FitGear.security.*;
+import com.amouri_coding.FitGear.user.Client;
+import com.amouri_coding.FitGear.user.User;
 import com.amouri_coding.FitGear.user.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -33,6 +46,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
 
     @Value("${spring.application.security.jwt.access-expiration}")
     private long accessTokenExpiration;
@@ -42,7 +57,7 @@ public class AuthenticationService {
 
     @Value("${spring.application.mail.frontend.activation-url}")
     private String activationUrl;
-    private UserRepository userRepository;
+
 
     public String refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
@@ -70,10 +85,13 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Coach passwords do not match");
         }
 
-        var coachRole = userRoleRepository.findByName("COACH")
+        UserRole coachRole = userRoleRepository.findByName("COACH")
                 .orElseThrow(() -> new IllegalStateException("Coach Role not found"));
-
-        var coach = Coach.builder()
+        Map<String, Object> claims = new HashMap<>();
+        String fullName = request.getCoachFirstName() + " " + request.getCoachLastName();
+        claims.put("role", coachRole.getName());
+        claims.put("fullName", fullName);
+        Coach coach = Coach.builder()
                 .firstName(request.getCoachFirstName())
                 .lastName(request.getCoachLastName())
                 .email(request.getCoachEmail())
@@ -86,11 +104,12 @@ public class AuthenticationService {
                 .description(request.getDescription())
                 .phoneNumber(request.getPhoneNumber())
                 .yearsOfExperience(request.getYearsOfExperience())
-                .build();
+                .build()
+                ;
 
         coachRepository.save(coach);
 
-        String accessToken = jwtService.generateAccessToken(coach);
+        String accessToken = jwtService.generateAccessToken(claims, coach);
         String refreshToken = jwtService.generateRefreshToken(coach);
 
         saveToken(coach, accessToken, TokenType.ACCESS);
@@ -100,13 +119,13 @@ public class AuthenticationService {
         sendValidationEmail(coach);
     }
 
-    private void sendValidationEmail(Coach coach) throws MessagingException {
-        var newToken = generateAndSaveActivationToken(coach);
+    private void sendValidationEmail(User user) throws MessagingException {
+        String newToken = generateAndSaveActivationToken(user);
 
         try {
             emailService.sendEmail(
-                    coach.getEmail(),
-                    coach.getName(),
+                    user.getEmail(),
+                    user.getName(),
                     EmailTemplateName.ACTIVATE_ACCOUNT,
                     activationUrl,
                     newToken,
@@ -116,13 +135,23 @@ public class AuthenticationService {
         }
     }
 
-    private void saveToken(Coach coach, String token, TokenType tokenType) {
+    private void saveToken(User user, String token, TokenType tokenType) {
 
-        if (coach.getId() == null) {
-            coach = userRepository.save(coach);
+        UserType userType;
+        Class<?> userClass = Hibernate.getClass(user);
+        if (Coach.class.isAssignableFrom(userClass)) {
+            userType = UserType.COACH;
+        } else if (Client.class.isAssignableFrom(userClass)) {
+            userType = UserType.CLIENT;
+        } else {
+            log.info("unexpected user type " + user.getClass().getSimpleName());
+            throw new IllegalArgumentException("Invalid user type");
+        }
+        if (user.getId() == null) {
+            userRepository.save(user);
         }
 
-        Long expiresAt;
+        long expiresAt;
         if (tokenType == TokenType.ACCESS) {
             expiresAt = accessTokenExpiration;
         } else {
@@ -133,30 +162,41 @@ public class AuthenticationService {
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plus(expiresAt, ChronoUnit.MILLIS))
                 .tokenType(tokenType)
-                .user(coach)
-                .userType(UserType.COACH)
+                .user(user)
+                .userType(userType)
                 .build()
                 ;
 
         tokenRepository.save(tokenEntity);
     }
 
-    private String generateAndSaveActivationToken(Coach coach) {
-        var generatedToken = generateActivationToken(6);
+    private String generateAndSaveActivationToken(User user) {
+        var generatedToken = generateActivationTokenBody(6);
+
+        UserType userType;
+        Class<?> userClass = Hibernate.getClass(user);
+        if (Coach.class.isAssignableFrom(userClass)) {
+            userType = UserType.COACH;
+        } else if (Client.class.isAssignableFrom(userClass)) {
+            userType = UserType.CLIENT;
+        } else {
+            log.info("unexpected user type " + user.getClass().getSimpleName());
+            throw new IllegalArgumentException("Invalid user type.");
+        }
         var token = Token.builder()
                 .token(generatedToken)
                 .issuedAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
                 .tokenType(TokenType.BEARER)
-                .userType(UserType.COACH)
-                .user(coach)
+                .userType(userType)
+                .user(user)
                 .build()
                 ;
         tokenRepository.save(token);
         return generatedToken;
     }
 
-    private String generateActivationToken(int length) {
+    private String generateActivationTokenBody(int length) {
         String charSequence = "0123456789";
         StringBuilder activationToken = new StringBuilder();
         SecureRandom secureRandom = new SecureRandom();
@@ -165,6 +205,57 @@ public class AuthenticationService {
             activationToken.append(charSequence.charAt(randomIndex));
         }
         return activationToken.toString();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        var auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        Map<String, Object> claims = new HashMap<>();
+        var user = (User) auth.getPrincipal();
+        if (user.getRoles().stream().anyMatch(userRole -> "COACH".equals(userRole.getName()))) {
+            claims.put("role", "COACH");
+        } else if (user.getRoles().stream().anyMatch(userRole -> "CLIENT".equals(userRole.getName()))) {
+            claims.put("role", "CLIENT");
+        } else {
+            throw new IllegalStateException("User role not recognized");
+        }
+        claims.put("fullName", user.getName());
+
+        String accessToken = jwtService.generateAccessToken(claims, user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        return AuthenticationResponse.builder()
+                .token(accessToken)
+                .refreshToken(refreshToken)
+                .build()
+                ;
+    }
+
+    @Transactional
+    public void confirmAccount(String token) throws MessagingException {
+        Token savedToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new InvalidTokenException("Invalid token"));
+        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
+            sendValidationEmail(savedToken.getUser());
+            throw new RuntimeException("Activation token expired. A new token has been issued.");
+        }
+        try {
+            User user = userRepository.findById(savedToken.getUser().getId())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            if (savedToken.getToken().equals(token)) {
+                user.setAccountEnabled(true);
+                userRepository.save(user);
+                savedToken.setValidatedAt(LocalDateTime.now());
+                tokenRepository.save(savedToken);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
     }
 
 }
