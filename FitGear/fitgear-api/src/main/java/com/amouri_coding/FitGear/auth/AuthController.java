@@ -36,11 +36,21 @@ public class AuthController {
 
     @PostMapping("/register/coach")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> register(
+    public ResponseEntity<?> registerCoach(
             @RequestBody @Valid CoachRegistrationRequest request,
             HttpServletResponse response
     ) throws MessagingException {
         authService.registerCoach(request, response);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/register/client")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<?> registerClient(
+            @RequestBody ClientRegistrationRequest request,
+            HttpServletResponse response
+    ) throws MessagingException {
+        authService.registerClient(request, response);
         return ResponseEntity.accepted().build();
     }
 

@@ -1,16 +1,17 @@
 package com.amouri_coding.FitGear.auth;
 
-import com.amouri_coding.FitGear.coach.Coach;
-import com.amouri_coding.FitGear.coach.CoachRepository;
 import com.amouri_coding.FitGear.email.EmailService;
 import com.amouri_coding.FitGear.email.EmailTemplateName;
 import com.amouri_coding.FitGear.exception.InvalidTokenException;
 import com.amouri_coding.FitGear.role.UserRole;
 import com.amouri_coding.FitGear.role.UserRoleRepository;
 import com.amouri_coding.FitGear.security.*;
-import com.amouri_coding.FitGear.user.Client;
 import com.amouri_coding.FitGear.user.User;
 import com.amouri_coding.FitGear.user.UserRepository;
+import com.amouri_coding.FitGear.user.client.Client;
+import com.amouri_coding.FitGear.user.client.ClientRepository;
+import com.amouri_coding.FitGear.user.coach.Coach;
+import com.amouri_coding.FitGear.user.coach.CoachRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -48,6 +49,7 @@ public class AuthenticationService {
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+    private final ClientRepository clientRepository;
 
     @Value("${spring.application.security.jwt.access-expiration}")
     private long accessTokenExpiration;
@@ -82,15 +84,17 @@ public class AuthenticationService {
         }
 
         if (!request.getCoachPassword().equals(request.getCoachPasswordConfirm())) {
-            throw new IllegalArgumentException("Coach passwords do not match");
+            throw new IllegalArgumentException("Passwords do not match");
         }
 
         UserRole coachRole = userRoleRepository.findByName("COACH")
                 .orElseThrow(() -> new IllegalStateException("Coach Role not found"));
+
         Map<String, Object> claims = new HashMap<>();
         String fullName = request.getCoachFirstName() + " " + request.getCoachLastName();
         claims.put("role", coachRole.getName());
         claims.put("fullName", fullName);
+
         Coach coach = Coach.builder()
                 .firstName(request.getCoachFirstName())
                 .lastName(request.getCoachLastName())
@@ -117,6 +121,52 @@ public class AuthenticationService {
 
         response.setHeader("Authorization", "Bearer " + accessToken);
         sendValidationEmail(coach);
+    }
+
+    public void registerClient(ClientRegistrationRequest request, HttpServletResponse response) throws MessagingException {
+        Optional<Client> clientExists = clientRepository.findByEmail(request.getEmail());
+
+        if (clientExists.isPresent()) {
+            throw new IllegalStateException("Client already exists");
+        }
+
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        UserRole userRole = userRoleRepository.findByName("CLIENT")
+                .orElseThrow(() -> new IllegalStateException("Client Role not found"));
+
+        Map<String, Object> claims = new HashMap<>();
+        String fullName = request.getFirstName() + " " + request.getLastName();
+        claims.put("role", userRole.getName());
+        claims.put("fullName", fullName);
+
+        Client client = Client.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .accountEnabled(false)
+                .accountLocked(false)
+                .createdAt(LocalDateTime.now())
+                .roles(List.of(userRole))
+                .height(request.getHeight())
+                .weight(request.getWeight())
+                .bodyFatPercentage(request.getBodyFatPercentage())
+                .build()
+                ;
+
+        clientRepository.save(client);
+
+        String accessToken = jwtService.generateAccessToken(claims, client);
+        String refreshToken = jwtService.generateRefreshToken(client);
+
+        saveToken(client, accessToken, TokenType.ACCESS);
+        saveToken(client, refreshToken, TokenType.REFRESH);
+
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        sendValidationEmail(client);
     }
 
     private void sendValidationEmail(User user) throws MessagingException {
@@ -257,5 +307,6 @@ public class AuthenticationService {
         }
 
     }
+
 
 }

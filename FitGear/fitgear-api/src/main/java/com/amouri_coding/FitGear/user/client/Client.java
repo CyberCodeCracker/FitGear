@@ -1,6 +1,7 @@
-package com.amouri_coding.FitGear.user;
+package com.amouri_coding.FitGear.user.client;
 
-import com.amouri_coding.FitGear.coach.Coach;
+import com.amouri_coding.FitGear.user.User;
+import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,6 +32,6 @@ public class Client extends User {
     private double bodyFatPercentage;
 
     @ManyToOne
-    @JoinColumn(name = "coach_id")
+    @JoinColumn(name = "COACH_ID", nullable = true)
     private Coach coach;
 }

@@ -32,29 +32,29 @@ public abstract class User implements UserDetails, Principal, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    @Column(name = "user_id", columnDefinition = "BIGSERIAL")
+    @Column(name = "USER_ID", columnDefinition = "BIGSERIAL")
     private Long id;
 
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "FIRST_NAME", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "LAST_NAME", nullable = false)
     private String lastName;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Column(name = "EMAIL", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "PASSWORD", nullable = false)
     private String password;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "account_locked", nullable = false)
+    @Column(name = "ACCOUNT_LOCKED", nullable = false)
     private boolean accountLocked;
 
-    @Column(name = "account_enabled", nullable = false)
+    @Column(name = "ACCOUNT_ENABLED", nullable = false)
     private boolean accountEnabled;
 
     @ManyToMany(fetch = FetchType.EAGER)

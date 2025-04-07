@@ -1,8 +1,8 @@
-package com.amouri_coding.FitGear.coach;
+package com.amouri_coding.FitGear.user.coach;
 
 import com.amouri_coding.FitGear.certification.Certification;
 import com.amouri_coding.FitGear.specialty.Specialty;
-import com.amouri_coding.FitGear.user.Client;
+import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,10 +26,10 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class Coach extends User {
 
-    @Column(name = "description")
+    @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "years_of_experience")
+    @Column(name = "YEARS_OF_EXPERIENCE")
     private int yearsOfExperience;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -48,25 +48,24 @@ public class Coach extends User {
     )
     private List<Certification> certifications;
 
-    @Column(name = "monthly_rate")
+    @Column(name = "MONTHLY_RATE")
     private double monthlyRate;
 
-    @Column(name = "phone_number")
+    @Column(name = "PHONE_NUMBER")
     private String phoneNumber;
 
-    @Column(name = "is_available")
+    @Column(name = "IS_AVAILABLE")
     private boolean isAvailable;
 
-    @Column(name = "profile_picture")
+    @Column(name = "PROFILE_PICTURE")
     private String profilePicture;
 
-    @Column(name = "is_verified")
+    @Column(name = "IS_VERIFIED")
     private boolean isVerified;
 
-    @Column(name = "rating")
+    @Column(name = "RATING")
     private double rating;
 
-    @OneToMany
-    @JoinColumn(name = "coach_id")
+    @OneToMany(mappedBy = "coach")
     private List<Client> clients;
 }

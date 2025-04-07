@@ -1,6 +1,6 @@
 package com.amouri_coding.FitGear.specialty;
 
-import com.amouri_coding.FitGear.coach.Coach;
+import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

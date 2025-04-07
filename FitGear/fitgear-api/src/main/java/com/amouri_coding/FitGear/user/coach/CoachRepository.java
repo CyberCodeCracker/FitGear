@@ -1,4 +1,4 @@
-package com.amouri_coding.FitGear.coach;
+package com.amouri_coding.FitGear.user.coach;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
