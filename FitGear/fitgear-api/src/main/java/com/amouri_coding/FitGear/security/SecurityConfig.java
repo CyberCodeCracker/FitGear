@@ -42,17 +42,16 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                                .requestMatchers("/invite/invite").hasAuthority("ROLE_COACH")
                                 .anyRequest()
                                 .authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-                    System.err.println("Authentication Entry Point Called");
-                    System.err.println("Request URL: " + request.getRequestURL());
-                    System.err.println("Authentication Exception: " + authException.getMessage());
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                    System.out.println("Message: " + authException.getMessage());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access denied");
                 }))
                 .build()
                 ;

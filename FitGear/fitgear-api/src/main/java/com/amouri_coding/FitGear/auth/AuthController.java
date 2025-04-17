@@ -1,14 +1,21 @@
 package com.amouri_coding.FitGear.auth;
 
+import com.amouri_coding.FitGear.user.coach.Coach;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -18,6 +25,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthenticationService authService;
+    private final ValidationAutoConfiguration validationAutoConfiguration;
 
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, String>> generateRefreshToken(
@@ -47,7 +55,7 @@ public class AuthController {
     @PostMapping("/register/client")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> registerClient(
-            @RequestBody ClientRegistrationRequest request,
+            @RequestBody @Valid ClientRegistrationRequest request,
             HttpServletResponse response
     ) throws MessagingException {
         authService.registerClient(request, response);
@@ -67,7 +75,6 @@ public class AuthController {
     ) throws MessagingException {
         authService.confirmAccount(token);
     }
-
 
 }
 

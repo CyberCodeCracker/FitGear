@@ -19,10 +19,19 @@ spring:
       jwt:
         access-expiration: 900000
         refresh-expiration: 604800000
+        invitation-expiration: 86400000
+      url:
+        base-url: "http://localhost:8080/api/v1"
     mail:
       from-email: souhailamouri123@gmail.com
       frontend:
         activation-url: http://localhost:4200/activate-account
+
+  logging:
+    level:
+      org.springframework: INFO
+      org.springframework.security: DEBUG
+      com.amouri_coding.FitGear: DEBUG
 
   mail:
     host: localhost

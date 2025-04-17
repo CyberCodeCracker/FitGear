@@ -12,22 +12,22 @@ import lombok.*;
 public class CoachRegistrationRequest {
 
     @NotBlank(message = "First name is required")
-    private String coachFirstName;
+    private String firstName;
 
     @NotBlank(message = "First name is required")
-    private String coachLastName;
+    private String lastName;
 
     @NotBlank(message = "First name is required")
     @Email(message = "Invalid email format")
-    private String coachEmail;
+    private String email;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 20, message = "Password should be between 8 and 20 characters long")
-    private String coachPassword;
+    private String password;
 
     @NotBlank(message = "Password confirmation is required")
     @Size(min = 8, max = 20, message = "Password should be between 8 and 20 characters long")
-    private String coachPasswordConfirm;
+    private String passwordConfirm;
 
     @NotBlank(message = "Password confirmation is required")
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")

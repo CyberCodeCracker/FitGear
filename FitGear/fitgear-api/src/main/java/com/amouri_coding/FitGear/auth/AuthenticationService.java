@@ -19,21 +19,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -77,13 +77,13 @@ public class AuthenticationService {
     }
 
     public void registerCoach(CoachRegistrationRequest request, HttpServletResponse response) throws MessagingException {
-        Optional<Coach> coachExists = coachRepository.findByEmail(request.getCoachEmail());
+        Optional<Coach> coachExists = coachRepository.findByEmail(request.getEmail());
 
         if (coachExists.isPresent()) {
             throw new IllegalStateException("Coach already exists");
         }
 
-        if (!request.getCoachPassword().equals(request.getCoachPasswordConfirm())) {
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
             throw new IllegalArgumentException("Passwords do not match");
         }
 
@@ -91,15 +91,15 @@ public class AuthenticationService {
                 .orElseThrow(() -> new IllegalStateException("Coach Role not found"));
 
         Map<String, Object> claims = new HashMap<>();
-        String fullName = request.getCoachFirstName() + " " + request.getCoachLastName();
+        String fullName = request.getFirstName() + " " + request.getLastName();
         claims.put("role", coachRole.getName());
         claims.put("fullName", fullName);
 
         Coach coach = Coach.builder()
-                .firstName(request.getCoachFirstName())
-                .lastName(request.getCoachLastName())
-                .email(request.getCoachEmail())
-                .password(passwordEncoder.encode(request.getCoachPassword()))
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .accountEnabled(false)
                 .accountLocked(false)
                 .createdAt(LocalDateTime.now())
@@ -116,7 +116,6 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(claims, coach);
         String refreshToken = jwtService.generateRefreshToken(coach);
 
-        saveToken(coach, accessToken, TokenType.ACCESS);
         saveToken(coach, refreshToken, TokenType.REFRESH);
 
         response.setHeader("Authorization", "Bearer " + accessToken);
@@ -162,7 +161,6 @@ public class AuthenticationService {
         String accessToken = jwtService.generateAccessToken(claims, client);
         String refreshToken = jwtService.generateRefreshToken(client);
 
-        saveToken(client, accessToken, TokenType.ACCESS);
         saveToken(client, refreshToken, TokenType.REFRESH);
 
         response.setHeader("Authorization", "Bearer " + accessToken);
@@ -194,7 +192,6 @@ public class AuthenticationService {
         } else if (Client.class.isAssignableFrom(userClass)) {
             userType = UserType.CLIENT;
         } else {
-            log.info("unexpected user type " + user.getClass().getSimpleName());
             throw new IllegalArgumentException("Invalid user type");
         }
         if (user.getId() == null) {
@@ -202,10 +199,10 @@ public class AuthenticationService {
         }
 
         long expiresAt;
-        if (tokenType == TokenType.ACCESS) {
-            expiresAt = accessTokenExpiration;
-        } else {
+        if (tokenType == TokenType.REFRESH) {
             expiresAt = refreshTokenExpiration;
+        } else {
+            return;
         }
         Token tokenEntity = Token.builder()
                 .token(token)
@@ -230,7 +227,6 @@ public class AuthenticationService {
         } else if (Client.class.isAssignableFrom(userClass)) {
             userType = UserType.CLIENT;
         } else {
-            log.info("unexpected user type " + user.getClass().getSimpleName());
             throw new IllegalArgumentException("Invalid user type.");
         }
         var token = Token.builder()
@@ -268,16 +264,16 @@ public class AuthenticationService {
         Map<String, Object> claims = new HashMap<>();
         var user = (User) auth.getPrincipal();
         if (user.getRoles().stream().anyMatch(userRole -> "COACH".equals(userRole.getName()))) {
-            claims.put("role", "COACH");
+            claims.put("role", "ROLE_COACH");
         } else if (user.getRoles().stream().anyMatch(userRole -> "CLIENT".equals(userRole.getName()))) {
-            claims.put("role", "CLIENT");
+            claims.put("role", "ROLE_CLIENT");
         } else {
             throw new IllegalStateException("User role not recognized");
         }
         claims.put("fullName", user.getName());
 
-        String accessToken = jwtService.generateAccessToken(claims, user);
-        String refreshToken = jwtService.generateRefreshToken(user);
+        String accessToken = jwtService.generateAccessToken(claims, (User) auth.getPrincipal());
+        String refreshToken = jwtService.generateRefreshToken((User) auth.getPrincipal());
         return AuthenticationResponse.builder()
                 .token(accessToken)
                 .refreshToken(refreshToken)
@@ -307,6 +303,5 @@ public class AuthenticationService {
         }
 
     }
-
 
 }

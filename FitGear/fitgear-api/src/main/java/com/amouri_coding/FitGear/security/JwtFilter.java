@@ -1,5 +1,7 @@
 package com.amouri_coding.FitGear.security;
 
+import com.amouri_coding.FitGear.role.UserRoleRepository;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -25,11 +27,11 @@ import java.io.IOException;
 @Service
 @AllArgsConstructor
 @Slf4j
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final UserRoleRepository userRoleRepository;
 
     @Override
     protected void doFilterInternal(
@@ -44,18 +46,6 @@ public class JwtFilter extends OncePerRequestFilter {
         log.info("Context Path: {}", request.getContextPath());
         log.info("Request Method: {}", request.getMethod());
 
-        try {
-            if (request.getRequestURI().contains("/api/v1/auth")) {
-                System.out.println("Passing through auth endpoint");
-                filterChain.doFilter(request, response);
-                System.out.println("Finished passing through auth endpoint");
-                return;
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
-        }
-
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -65,21 +55,29 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             final String token = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(token);
-
+            String role = jwtService.extractClaim(token, claims -> claims.get("role", String.class));
+            log.info("role {}", role);
+            log.info("userEmail {}", userEmail);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtService.isTokenValid(token, userDetails)) {
+                log.info("user authorities: {}", userDetails.getAuthorities());
+                boolean isTokenValid = jwtService.isTokenValid(token, userDetails);
+                log.info("isTokenValid? {}", isTokenValid);
+                if (isTokenValid) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.info("Authentication set for user {}", userDetails.getUsername());
                 }
             }
         } catch (ExpiredJwtException e) {
-            log.warn("JWT is expired: {}", e.getMessage());
+            log.error("JWT is expired: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
         } catch (JwtException | UsernameNotFoundException e) {
-            log.warn("JWT authentication failed: {}", e.getMessage());
+            log.error("JWT authentication failed: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }
 

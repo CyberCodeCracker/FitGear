@@ -33,7 +33,7 @@ public class ClientRegistrationRequest {
     private double height;
 
     @NotBlank(message = "Weight is required")
-    @Min(value = 100, message = "Please input a valid value")
+    @Min(value = 40, message = "Please input a valid value")
     private double weight;
 
     @NotBlank(message = "Body fat percentage is required")

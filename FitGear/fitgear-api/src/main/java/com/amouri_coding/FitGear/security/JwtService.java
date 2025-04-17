@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.security;
 
 import com.amouri_coding.FitGear.user.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -27,11 +28,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtService {
 
+    private final TokenRepository tokenRepository;
     @Value("${spring.application.security.jwt.access-expiration}")
-    private Long accessTokenExpiration;
+    private long accessTokenExpiration;
 
     @Value("${spring.application.security.jwt.refresh-expiration}")
-    private Long refreshTokenExpiration;
+    private long refreshTokenExpiration;
+
+    @Value("${spring.application.security.jwt.invitation-expiration}")
+    private long invitationTokenExpiration;
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
@@ -61,7 +66,8 @@ public class JwtService {
         keyString = keyString.replace("-----BEGIN PRIVATE KEY-----", "")
                 .replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s", "")
-                .replaceAll("\n", "");
+                .replaceAll("\n", "")
+                ;
         byte[] decodedKey = java.util.Base64.getDecoder().decode(keyString);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
         return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
@@ -73,7 +79,8 @@ public class JwtService {
         keyString = keyString.replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s", "")
-                .replaceAll("\n", "");
+                .replaceAll("\n", "")
+                ;
         byte[] decodedKey = java.util.Base64.getDecoder().decode(keyString);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedKey);
         return KeyFactory.getInstance("RSA").generatePublic(keySpec);
@@ -83,12 +90,12 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(publicKey)
                 .build()
@@ -104,6 +111,10 @@ public class JwtService {
     public String generateRefreshToken(UserDetails userDetails) {
         return buildToken(new HashMap<>(), userDetails, refreshTokenExpiration);
     }
+    
+    public String generateInvitationToken(Map<String, Object> claims, UserDetails userDetails) {
+        return buildToken(claims, userDetails, invitationTokenExpiration);
+    }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long tokenExpiration) {
         return Jwts.builder()
@@ -117,8 +128,18 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(publicKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    ;
+            final String username = extractUsername(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        } catch (JwtException e) {
+            return false;
+        }
+
     }
 
     private boolean isTokenExpired(String token) {
