@@ -28,15 +28,15 @@ public class ClientRegistrationRequest {
     @Size(min = 8, max = 20, message = "Password should be between 8 and 20 characters long")
     private String passwordConfirm;
 
-    @NotBlank(message = "Height is required")
+    @NotNull(message = "Height is required")
     @Min(value = 100, message = "Please input a valid height")
     private double height;
 
-    @NotBlank(message = "Weight is required")
+    @NotNull(message = "Weight is required")
     @Min(value = 40, message = "Please input a valid value")
     private double weight;
 
-    @NotBlank(message = "Body fat percentage is required")
+    @NotNull(message = "Body fat percentage is required")
     @Min(value = 0)
     @Max(value = 80)
     private double bodyFatPercentage;

@@ -80,7 +80,7 @@ public class AuthenticationService {
         Optional<Coach> coachExists = coachRepository.findByEmail(request.getEmail());
 
         if (coachExists.isPresent()) {
-            throw new IllegalStateException("Coach already exists");
+            throw new IllegalStateException("Coach with this email " + request.getEmail() + " already exists");
         }
 
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
@@ -126,7 +126,7 @@ public class AuthenticationService {
         Optional<Client> clientExists = clientRepository.findByEmail(request.getEmail());
 
         if (clientExists.isPresent()) {
-            throw new IllegalStateException("Client already exists");
+            throw new IllegalStateException("Client with this email " + request.getEmail() + " already exists");
         }
 
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
