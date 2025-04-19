@@ -6,6 +6,7 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.Map;
 @RequestMapping("auth")
 @RequiredArgsConstructor
 @Tag(name = "Auth")
+@Slf4j
 public class AuthController {
 
     private final AuthenticationService authService;
@@ -74,6 +76,40 @@ public class AuthController {
             @RequestParam String token
     ) throws MessagingException {
         authService.confirmAccount(token);
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_COACH')")
+    @PostMapping("/invite")
+    public ResponseEntity<?> inviteClient(
+            @RequestBody @Valid InvitationRequest request,
+            Authentication authentication
+    ) {
+        try {
+            String invitationLink = authService.generateInvitationLink(request, authentication);
+            return ResponseEntity.ok(Map.of("invitationLink", invitationLink));
+        } catch (Exception e) {
+            log.error("Error generating invitation link {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error","Generating invitation link: " + e.getMessage()));
+        }
+
+    }
+
+    @PostMapping("/invite/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<?> registerClient(
+            @RequestBody @Valid ClientRegistrationRequest request,
+            @RequestParam String invitationLink,
+            HttpServletResponse response
+    ) {
+        try {
+            authService.registerClientFromInvitationLink(request, invitationLink, response);
+            return ResponseEntity.accepted().build();
+        } catch (Exception e) {
+            log.error("Error registering client from link {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("Error","Registration failed: " + e.getMessage()));
+        }
     }
 
 }

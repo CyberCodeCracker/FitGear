@@ -60,6 +60,11 @@ public class AuthenticationService {
     @Value("${spring.application.mail.frontend.activation-url}")
     private String activationUrl;
 
+    @Value("${spring.application.security.url.base-url}")
+    private String baseUrl;
+
+    @Value("${spring.application.security.jwt.invitation-expiration}")
+    private long invitationTokenExpiration;
 
     public String refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
@@ -301,7 +306,101 @@ public class AuthenticationService {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+    public String generateInvitationLink(InvitationRequest request, Authentication authentication) {
 
+        if (authentication == null) {
+            log.error("No authentication found.");
+            throw new AccessDeniedException("Authentication required");
+        }
+
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
+            throw new AccessDeniedException("You are not a coach. Illegal operation.");
+        }
+
+        Object principal = authentication.getPrincipal();
+        Coach coach = ((Coach) principal);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("coachId", coach.getId());
+        claims.put("coachName", coach.getName());
+        claims.put("coachEmail", coach.getEmail());
+        claims.put("role", coach.getName());
+        if (!request.getMessage().isEmpty() && !request.getMessage().isBlank()) {
+            claims.put("message", request.getMessage());
+        }
+        claims.put("expirationTime", invitationTokenExpiration);
+        log.info("Extracted claims: {}", claims);
+        String jwtToken = jwtService.generateInvitationToken(claims, coach);
+        String invitationLink = baseUrl + "/auth/invite?token=" + jwtToken;
+
+        return invitationLink;
+    }
+
+    public void registerClientFromInvitationLink(ClientRegistrationRequest request,
+                                                 String invitationLink,
+                                                 HttpServletResponse response
+    ) throws MessagingException {
+
+        Optional<Client> clientExists = clientRepository.findByEmail(request.getEmail());
+
+        if (clientExists.isPresent()) {
+            throw new IllegalStateException("Client with this email " + request.getEmail() + " already exists.");
+        }
+
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            throw new IllegalArgumentException("Password and confirm password do not match.");
+        }
+
+        UserRole userRole = userRoleRepository.findByName("CLIENT")
+                .orElseThrow(() -> new IllegalStateException("Client Role not found"));
+
+        String token = extractTokenFromInvitationLink(invitationLink);
+        Integer coachId = jwtService.extractClaim(token, claims -> claims.get("coachId", Integer.class));
+        Coach coach = coachRepository.findById(coachId);
+        if (coach == null) {
+            throw new IllegalStateException("Coach not found.");
+        }
+        log.info("Coach Id {}", coachId);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("coachId", coachId);
+        claims.put("role", userRole.getName());
+        claims.put("fullName", request.getFirstName() + " " + request.getLastName());
+
+        Client client = Client.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .coach(coach)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .accountEnabled(false)
+                .accountLocked(false)
+                .createdAt(LocalDateTime.now())
+                .roles(List.of(userRole))
+                .height(request.getHeight())
+                .weight(request.getWeight())
+                .bodyFatPercentage(request.getBodyFatPercentage())
+                .build()
+                ;
+        clientRepository.save(client);
+
+        String accessToken = jwtService.generateAccessToken(claims, client);
+        String refreshToken = jwtService.generateRefreshToken(client);
+
+        saveToken(client, refreshToken, TokenType.REFRESH);
+
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        sendValidationEmail(client);    }
+
+    private String extractTokenFromInvitationLink(String invitationLink) {
+
+        int tokenStartingIndex = invitationLink.indexOf("token=");
+        if (tokenStartingIndex == -1) {
+            throw new IllegalArgumentException("Invalid invitation link.");
+        }
+        return invitationLink.substring(tokenStartingIndex + "token=".length());
     }
 
 }

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(
                                 "/auth/**",
-                                "/invite/register",
+                                "/auth/register",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                                .requestMatchers("/invite/invite").hasAuthority("ROLE_COACH")
+                                .requestMatchers("/auth/invite").hasAuthority("ROLE_COACH")
+                                .requestMatchers("/coach/show-clients").hasAuthority("ROLE_COACH")
                                 .anyRequest()
                                 .authenticated()
                 )
