@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("coach")
@@ -28,6 +25,17 @@ public class CoachController {
             @RequestParam(name = "size", defaultValue = "10", required = false) int size,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(coachService.findAllClients(page, size, authentication));
+        return ResponseEntity.ok(coachService.showAllClients(page, size, authentication));
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @GetMapping("/show-client/{client-name}")
+    public ResponseEntity<PageResponse<ClientResponse>> showClientsByName(
+            @PathVariable("client-name") String clientName,
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(coachService.showClientsByName(clientName, page, size, authentication));
     }
 }

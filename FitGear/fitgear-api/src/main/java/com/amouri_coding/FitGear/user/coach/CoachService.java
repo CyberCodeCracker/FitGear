@@ -26,7 +26,7 @@ public class CoachService {
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
 
-    public PageResponse<ClientResponse> findAllClients(int page, int size, Authentication authentication) {
+    public PageResponse<ClientResponse> showAllClients(int page, int size, Authentication authentication) {
 
         if (authentication == null) {
             log.error("No authentication found");
@@ -46,6 +46,41 @@ public class CoachService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").descending());
         Page<Client> clients = clientRepository.findAllClientsByCoachId(pageable, coach.getId());
+        List<ClientResponse> clientResponses = clients.stream()
+                .map(clientMapper::toClientResponse)
+                .toList()
+                ;
+        return new PageResponse<>(
+                clientResponses,
+                clients.getNumber(),
+                clients.getSize(),
+                clients.getTotalElements(),
+                clients.getTotalPages(),
+                clients.isFirst(),
+                clients.isLast()
+        );
+    }
+
+    public PageResponse<ClientResponse> showClientsByName(String clientName, int page, int size, Authentication authentication) {
+
+        if (authentication == null) {
+            log.error("No authentication found");
+            throw new AccessDeniedException("Authentication required");
+        }
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
+            throw new AccessDeniedException("You are not a coach. Illegal operation");
+        }
+
+        Object principal = authentication.getPrincipal();
+        Coach coach = ((Coach) principal);
+
+        if (coach == null) {
+            throw new IllegalStateException("No coach found");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").descending());
+        Page<Client> clients = clientRepository.findAllClientsByName(clientName, pageable, coach.getId());
         List<ClientResponse> clientResponses = clients.stream()
                 .map(clientMapper::toClientResponse)
                 .toList()
