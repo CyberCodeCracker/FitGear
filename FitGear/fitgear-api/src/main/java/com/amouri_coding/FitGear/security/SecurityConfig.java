@@ -43,8 +43,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                                .requestMatchers("/auth/invite").hasAuthority("ROLE_COACH")
-                                .requestMatchers("/coach/show-clients").hasAuthority("ROLE_COACH")
                                 .anyRequest()
                                 .authenticated()
                 )

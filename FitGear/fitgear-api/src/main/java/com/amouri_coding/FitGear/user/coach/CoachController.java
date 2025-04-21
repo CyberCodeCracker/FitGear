@@ -38,4 +38,10 @@ public class CoachController {
     ) {
         return ResponseEntity.ok(coachService.showClientsByName(clientName, page, size, authentication));
     }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @PostMapping("/assign-program/{client-id}")
+    public ResponseEntity<?> updateTrainingProgram() {
+
+    }
 }
