@@ -2,14 +2,17 @@ package com.amouri_coding.FitGear.training.training_day;
 
 import com.amouri_coding.FitGear.common.DayOfWeek;
 import com.amouri_coding.FitGear.training.exercise.ExerciseRequest;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
 @Builder
+@Getter
 public class TrainingDayRequest {
 
     @NotNull(message = "Program can't be null")

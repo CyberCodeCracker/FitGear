@@ -24,11 +24,12 @@ public class TrainingController {
     @PostMapping("/assign-program")
     @ResponseStatus(HttpStatus.CREATED)
     public void assignProgram(
+            @RequestParam Long clientId,
             @RequestBody @Valid TrainingProgramRequest request,
             Authentication authentication,
             HttpServletResponse response
             ) {
-        service.assignProgram(request, authentication, response);
+        service.assignProgram(clientId, request, authentication, response);
     }
 
 }

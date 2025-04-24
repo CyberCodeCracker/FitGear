@@ -1,6 +1,8 @@
 package com.amouri_coding.FitGear.training.training_program;
 
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
+import com.amouri_coding.FitGear.user.client.Client;
+import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +23,12 @@ public class TrainingProgram {
 
     @OneToMany(mappedBy = "program")
     private List<TrainingDay> trainingDays;
+
+    @OneToOne
+    private Client client;
+
+    @ManyToOne
+    @JoinColumn(name = "COACH_ID")
+    private Coach coach;
 
 }

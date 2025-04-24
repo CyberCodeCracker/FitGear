@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.user.coach;
 
 import com.amouri_coding.FitGear.certification.Certification;
 import com.amouri_coding.FitGear.specialty.Specialty;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.User;
 import jakarta.persistence.*;
@@ -68,4 +69,7 @@ public class Coach extends User {
 
     @OneToMany(mappedBy = "coach")
     private List<Client> clients;
+
+    @OneToMany(mappedBy = "coach")
+    private List<TrainingProgram> programs;
 }

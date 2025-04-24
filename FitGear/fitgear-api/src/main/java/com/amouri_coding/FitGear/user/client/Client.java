@@ -1,6 +1,7 @@
 package com.amouri_coding.FitGear.user.client;
 
 import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.user.User;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
@@ -39,4 +40,8 @@ public class Client extends User {
     @OneToOne
     @JoinColumn(name = "DIET_PROGRAM_ID")
     private DietProgram dietProgram;
+
+    @OneToOne
+    @JoinColumn(name = "TRAINING_PROGRAM_ID")
+    private TrainingProgram trainingProgram;
 }
