@@ -24,6 +24,10 @@ public class TrainingProgram {
     @OneToMany(mappedBy = "program")
     private List<TrainingDay> trainingDays;
 
+    private String title;
+
+    private String description;
+
     @OneToOne
     private Client client;
 

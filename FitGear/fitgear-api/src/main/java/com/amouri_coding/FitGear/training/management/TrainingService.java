@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.training.management;
 
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramMapper;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgramRepository;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
@@ -22,6 +23,7 @@ public class TrainingService {
 
     private final ClientRepository clientRepository;
     private final TrainingProgramMapper trainingProgramMapper;
+    private final TrainingProgramRepository trainingProgramRepository;
 
     public void assignProgram(Long clientId, @Valid TrainingProgramRequest request, Authentication authentication, HttpServletResponse response) {
 
@@ -30,7 +32,7 @@ public class TrainingService {
             throw new AccessDeniedException("Authentication required");
         }
 
-        if (authentication.getAuthorities().stream()
+        if (!authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
             throw new AccessDeniedException("You are not a coach");
         }
@@ -46,6 +48,6 @@ public class TrainingService {
         }
 
         TrainingProgram trainingProgram = trainingProgramMapper.toTrainingProgram(request, client, coach);
-
+        trainingProgramRepository.save(trainingProgram);
     }
 }

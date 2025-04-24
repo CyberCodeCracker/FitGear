@@ -11,6 +11,11 @@ import java.util.List;
 @Getter
 public class TrainingProgramRequest {
 
-    @NotBlank(message = "Day Can't be blank")
     private List<TrainingDayRequest> trainingday;
+
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String description;
 }

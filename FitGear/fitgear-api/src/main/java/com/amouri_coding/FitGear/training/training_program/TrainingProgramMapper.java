@@ -11,6 +11,8 @@ public class TrainingProgramMapper {
         return TrainingProgram.builder()
                 .client(client)
                 .coach(coach)
+                .title(request.getTitle())
+                .description(request.getDescription())
                 .trainingDays(null)
                 .build()
                 ;
