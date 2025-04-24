@@ -5,6 +5,7 @@ import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientMapper;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.client.ClientResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CoachService {
 
-    private final CoachRepository coachRepository;
     private final ClientRepository clientRepository;
     private final ClientMapper clientMapper;
 
@@ -94,5 +94,29 @@ public class CoachService {
                 clients.isFirst(),
                 clients.isLast()
         );
+    }
+
+    public ClientResponse getClientID(Long clientId, Authentication authentication) {
+
+        if (authentication == null) {
+            log.error("No authentication found");
+            throw new AccessDeniedException("Authentication required");
+        }
+
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
+            throw new AccessDeniedException("You are not a coach. Illegal operation");
+        }
+
+        Object principal = authentication.getPrincipal();
+        Coach coach = ((Coach) principal);
+
+        if (coach == null) {
+            throw new IllegalStateException("No coach found");
+        }
+
+        return clientRepository.findById(clientId)
+                .map(clientMapper::toClientResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
     }
 }

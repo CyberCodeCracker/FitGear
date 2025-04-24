@@ -1,12 +1,10 @@
 package com.amouri_coding.FitGear.training.training_day;
 
+import com.amouri_coding.FitGear.common.DayOfWeek;
 import com.amouri_coding.FitGear.training.exercise.Exercise;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -14,6 +12,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 public class TrainingDay {
 
@@ -26,6 +25,15 @@ public class TrainingDay {
     @JoinColumn(name = "PROGRAM_ID")
     private TrainingProgram program;
 
+    @Column(name = "TITLE", nullable = false)
+    private String title;
+
+    @Column(name = "DAY")
+    private DayOfWeek dayOfWeek;
+
     @OneToMany(mappedBy = "day")
     private List<Exercise> exercises;
+
+    @Column(name = "BURNED_CALORIES", nullable = false)
+    private int estimatedBurnedCalories;
 }

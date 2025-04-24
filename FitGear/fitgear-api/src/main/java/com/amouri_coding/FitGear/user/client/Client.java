@@ -1,5 +1,6 @@
 package com.amouri_coding.FitGear.user.client;
 
+import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
 import com.amouri_coding.FitGear.user.User;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
@@ -22,16 +23,20 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public class Client extends User {
 
-    @Column(nullable = false)
+    @Column(name = "HEIGHT", nullable = false)
     private double height;
 
-    @Column(nullable = false)
+    @Column(name = "WEIGHT", nullable = false)
     private double weight;
 
-    @Column(nullable = false)
+    @Column(name = "BODY_FAT_PERCENTAGE", nullable = false)
     private double bodyFatPercentage;
 
     @ManyToOne
     @JoinColumn(name = "coach_id")
     private Coach coach;
+
+    @OneToOne
+    @JoinColumn(name = "DIET_PROGRAM_ID")
+    private DietProgram dietProgram;
 }

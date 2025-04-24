@@ -55,7 +55,6 @@ public class AuthController {
     }
 
     @PostMapping("/register/client")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> registerClient(
             @RequestBody @Valid ClientRegistrationRequest request,
             HttpServletResponse response
@@ -78,7 +77,7 @@ public class AuthController {
         authService.confirmAccount(token);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_COACH')")
+    @PreAuthorize("hasRole('ROLE_COACH')")
     @PostMapping("/invite")
     public ResponseEntity<?> inviteClient(
             @RequestBody @Valid InvitationRequest request,
@@ -96,7 +95,6 @@ public class AuthController {
     }
 
     @PostMapping("/invite/register")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> registerClient(
             @RequestBody @Valid ClientRegistrationRequest request,
             @RequestParam String invitationLink,

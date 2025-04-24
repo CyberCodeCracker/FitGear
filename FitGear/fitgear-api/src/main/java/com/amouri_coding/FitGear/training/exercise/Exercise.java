@@ -2,15 +2,13 @@ package com.amouri_coding.FitGear.training.exercise;
 
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 public class Exercise {
 
@@ -19,16 +17,22 @@ public class Exercise {
     @Column(name = "ID")
     private Long id;
 
+    @Column(name = "TITLE")
+    private String title;
+
+    @Column(name = "REST_TIME")
+    private String restTime;
+
+    @Column(name = "EXERCISE_URL")
+    private String exerciseUrl;
+
     @Column(name = "NUMBER_OF_SETS")
     private int numberOfSets;
 
     @Column(name = "NUMBER_OF_REPS")
     private int numberOfReps;
 
-    @Column(name = "REST_TIME")
-    private String restTime;
-
     @ManyToOne
     @JoinColumn(name = "TRAINING_DAY_ID")
-    private TrainingDay trainingDay;
+    private TrainingDay day;
 }

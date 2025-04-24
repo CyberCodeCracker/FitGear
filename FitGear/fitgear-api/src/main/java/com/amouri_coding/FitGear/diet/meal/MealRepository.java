@@ -1,4 +1,4 @@
-package com.amouri_coding.FitGear.diet;
+package com.amouri_coding.FitGear.diet.meal;
 
 import org.hibernate.type.descriptor.converter.spi.JpaAttributeConverter;
 

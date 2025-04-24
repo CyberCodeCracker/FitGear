@@ -40,8 +40,12 @@ public class CoachController {
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PostMapping("/assign-program/{client-id}")
-    public ResponseEntity<?> updateTrainingProgram() {
-
+    @GetMapping("/{client-id}")
+    public ResponseEntity<ClientResponse> getClientId(
+            @PathVariable(value = "client-id") Long clientId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(coachService.getClientID(clientId, authentication));
     }
+
 }
