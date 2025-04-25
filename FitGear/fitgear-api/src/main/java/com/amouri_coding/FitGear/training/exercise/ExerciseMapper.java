@@ -12,10 +12,7 @@ public class ExerciseMapper {
 
     private final TrainingDayRepository trainingDayRepository;
 
-    public Exercise toExercise(ExerciseRequest request) {
-
-        TrainingDay trainingDay = trainingDayRepository.findById(request.getTrainingDayId())
-                .orElseThrow(() -> new EntityNotFoundException("Training day not found"));
+    public Exercise toExercise(ExerciseRequest request, TrainingDay trainingDay) {
 
         return Exercise.builder()
                 .title(request.getTitle())

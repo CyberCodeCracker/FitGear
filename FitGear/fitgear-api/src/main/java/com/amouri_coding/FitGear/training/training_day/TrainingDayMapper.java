@@ -16,26 +16,28 @@ import java.util.List;
 public class TrainingDayMapper {
 
     private final TrainingProgramRepository trainingProgramRepository;
-    private final ExerciseRepository exerciseRepository;
     private final ExerciseMapper exerciseMapper;
 
-    public TrainingDay toTrainingDay(TrainingDayRequest request) {
+    public TrainingDay toTrainingDay(TrainingDayRequest request, TrainingProgram program) {
 
-        TrainingProgram program = trainingProgramRepository.findById(request.getProgramId())
-                .orElseThrow(() -> new EntityNotFoundException("Program not found"));
-
-        List<Exercise> mappedExercises = request.getExercises()
-                .stream()
-                .map(exerciseMapper::toExercise)
-                .toList()
-                ;
-
-        return TrainingDay.builder()
+        TrainingDay trainingDay = TrainingDay.builder()
                 .program(program)
                 .title(request.getTitle())
                 .dayOfWeek(request.getDay())
                 .estimatedBurnedCalories(request.getEstimatedBurnedCalories())
                 .build()
                 ;
+
+        List<Exercise> mappedExercises = request.getExercises()
+                .stream()
+                .map(req -> exerciseMapper.toExercise(req, trainingDay))
+                .toList()
+                ;
+
+        trainingDay.setExercises(mappedExercises);
+
+        return trainingDay;
+
+
     }
 }

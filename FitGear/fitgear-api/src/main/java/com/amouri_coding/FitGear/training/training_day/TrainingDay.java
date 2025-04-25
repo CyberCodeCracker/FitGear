@@ -28,6 +28,7 @@ public class TrainingDay {
     @Column(name = "TITLE", nullable = false)
     private String title;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "DAY")
     private DayOfWeek dayOfWeek;
 

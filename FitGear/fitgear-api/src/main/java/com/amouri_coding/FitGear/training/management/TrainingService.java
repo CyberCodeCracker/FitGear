@@ -1,5 +1,9 @@
 package com.amouri_coding.FitGear.training.management;
 
+import com.amouri_coding.FitGear.training.exercise.Exercise;
+import com.amouri_coding.FitGear.training.exercise.ExerciseRepository;
+import com.amouri_coding.FitGear.training.training_day.TrainingDay;
+import com.amouri_coding.FitGear.training.training_day.TrainingDayRepository;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramMapper;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRepository;
@@ -16,6 +20,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,6 +31,8 @@ public class TrainingService {
     private final ClientRepository clientRepository;
     private final TrainingProgramMapper trainingProgramMapper;
     private final TrainingProgramRepository trainingProgramRepository;
+    private final TrainingDayRepository trainingDayRepository;
+    private final ExerciseRepository exerciseRepository;
 
     public void assignProgram(Long clientId, @Valid TrainingProgramRequest request, Authentication authentication, HttpServletResponse response) {
 
@@ -47,7 +56,22 @@ public class TrainingService {
             throw new AccessDeniedException("This client isn't yours");
         }
 
-        TrainingProgram trainingProgram = trainingProgramMapper.toTrainingProgram(request, client, coach);
-        trainingProgramRepository.save(trainingProgram);
+        try {
+            TrainingProgram trainingProgram = trainingProgramMapper.toTrainingProgram(request, client, coach);
+
+            List<TrainingDay> trainingDays = trainingProgram.getTrainingDays();
+            List<Exercise> exercises = trainingDays.stream()
+                    .flatMap(day -> day.getExercises().stream())
+                    .collect(Collectors.toList());
+
+            trainingProgramRepository.save(trainingProgram);
+            trainingDayRepository.saveAll(trainingDays);
+            exerciseRepository.saveAll(exercises);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
+        }
+
+
     }
 }
