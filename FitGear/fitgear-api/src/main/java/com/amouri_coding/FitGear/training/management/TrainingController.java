@@ -1,11 +1,14 @@
 package com.amouri_coding.FitGear.training.management;
 
+import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgramResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,16 @@ public class TrainingController {
             HttpServletResponse response
             ) {
         service.assignProgram(clientId, request, authentication, response);
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @GetMapping("/get-program")
+    public ResponseEntity<TrainingProgramResponse> getProgramOfClient(
+            @RequestParam Long clientId,
+            @RequestParam Long programId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getProgramOfClient(clientId, programId, authentication));
     }
 
 }

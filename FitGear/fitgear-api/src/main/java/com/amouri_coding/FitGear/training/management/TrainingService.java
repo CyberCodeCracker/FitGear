@@ -4,10 +4,7 @@ import com.amouri_coding.FitGear.training.exercise.Exercise;
 import com.amouri_coding.FitGear.training.exercise.ExerciseRepository;
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayRepository;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgramMapper;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgramRepository;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
+import com.amouri_coding.FitGear.training.training_program.*;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
@@ -62,7 +59,10 @@ public class TrainingService {
             List<TrainingDay> trainingDays = trainingProgram.getTrainingDays();
             List<Exercise> exercises = trainingDays.stream()
                     .flatMap(day -> day.getExercises().stream())
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList())
+                    ;
+
+            client.setTrainingProgram(trainingProgram);
 
             trainingProgramRepository.save(trainingProgram);
             trainingDayRepository.saveAll(trainingDays);
@@ -74,4 +74,43 @@ public class TrainingService {
 
 
     }
+
+    public TrainingProgramResponse getProgramOfClient(Long clientId, Long programId, Authentication authentication) {
+
+        if (authentication == null) {
+            log.error("No authentication found");
+            throw new AccessDeniedException("Authentication required");
+        }
+
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
+            log.error("You are not a coach");
+            throw new AccessDeniedException("You are not a coach");
+        }
+
+        Object principal = authentication.getPrincipal();
+        Coach coach = ((Coach) principal);
+
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+
+        TrainingProgram trainingProgram = trainingProgramRepository.findById(programId)
+                .orElseThrow(() -> new EntityNotFoundException("Training program not found"));
+
+        if (!client.getCoach().getId().equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (client.getTrainingProgram() == null) {
+            throw new IllegalStateException("Client has no training program assigned.");
+        }
+        if (!client.getTrainingProgram().getId().equals(trainingProgram.getId())) {
+            throw new IllegalStateException("This training program doesn't belong to this client");
+        }
+
+        TrainingProgramResponse trainingProgramResponse = trainingProgramMapper.toTrainingProgramResponse(trainingProgram);
+        return trainingProgramResponse;
+
+    }
+
 }

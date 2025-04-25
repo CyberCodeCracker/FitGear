@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
-@Builder
 @Getter
+@Builder
 public class ExerciseRequest {
 
     @NotNull(message = "Training day id can't be null")
@@ -15,10 +15,10 @@ public class ExerciseRequest {
     @NotBlank(message = "Title can't be blank")
     private String title;
 
-    @NotBlank(message = "Rest Time can't be blank")
-    private String restTime;
-
     private String exerciseUrl;
+
+    @NotNull(message = "Rest Time can't be blank")
+    private int restTime;
 
     @NotNull(message = "Number of set can't be null")
     private int numberOfSets;

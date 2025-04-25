@@ -21,7 +21,7 @@ public class TrainingProgram {
     @Column(name = "ID")
     private Long id;
 
-    @OneToMany(mappedBy = "program")
+    @OneToMany(mappedBy = "trainingProgram")
     private List<TrainingDay> trainingDays;
 
     @OneToOne

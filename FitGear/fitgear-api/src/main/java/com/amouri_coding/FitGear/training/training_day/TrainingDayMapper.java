@@ -2,10 +2,8 @@ package com.amouri_coding.FitGear.training.training_day;
 
 import com.amouri_coding.FitGear.training.exercise.Exercise;
 import com.amouri_coding.FitGear.training.exercise.ExerciseMapper;
-import com.amouri_coding.FitGear.training.exercise.ExerciseRepository;
+import com.amouri_coding.FitGear.training.exercise.ExerciseResponse;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgramRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +13,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TrainingDayMapper {
 
-    private final TrainingProgramRepository trainingProgramRepository;
     private final ExerciseMapper exerciseMapper;
 
     public TrainingDay toTrainingDay(TrainingDayRequest request, TrainingProgram program) {
 
         TrainingDay trainingDay = TrainingDay.builder()
-                .program(program)
+                .trainingProgram(program)
                 .title(request.getTitle())
                 .dayOfWeek(request.getDay())
                 .estimatedBurnedCalories(request.getEstimatedBurnedCalories())
@@ -37,7 +34,24 @@ public class TrainingDayMapper {
         trainingDay.setExercises(mappedExercises);
 
         return trainingDay;
+    }
 
+    public TrainingDayResponse toTrainingDayResponse(TrainingDay trainingDay) {
 
+        List<ExerciseResponse> mappedExercises = trainingDay.getExercises()
+                .stream()
+                .map(exerciseMapper::toExerciseResponse)
+                .toList()
+                ;
+
+        return TrainingDayResponse.builder()
+                .id(trainingDay.getId())
+                .programId(trainingDay.getTrainingProgram().getId())
+                .title(trainingDay.getTitle())
+                .dayOfWeek(trainingDay.getDayOfWeek())
+                .estimatedBurnedCalories(trainingDay.getEstimatedBurnedCalories())
+                .exercises(mappedExercises)
+                .build()
+                ;
     }
 }

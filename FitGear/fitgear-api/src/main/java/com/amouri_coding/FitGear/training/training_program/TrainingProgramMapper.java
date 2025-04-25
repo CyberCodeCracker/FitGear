@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.training.training_program;
 
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayMapper;
+import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +33,22 @@ public class TrainingProgramMapper {
         trainingProgram.setTrainingDays(mappedTrainingDays);
 
         return trainingProgram;
+    }
+
+    public TrainingProgramResponse toTrainingProgramResponse(TrainingProgram trainingProgram) {
+
+        List<TrainingDayResponse> mappedTrainingDays = trainingProgram.getTrainingDays()
+                .stream()
+                .map(trainingDayMapper::toTrainingDayResponse)
+                .toList()
+                ;
+
+        return TrainingProgramResponse.builder()
+                .id(trainingProgram.getId())
+                .clientId(trainingProgram.getClient().getId())
+                .coachId(trainingProgram.getCoach().getId())
+                .trainingDays(mappedTrainingDays)
+                .build()
+                ;
     }
 }

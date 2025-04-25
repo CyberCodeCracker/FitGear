@@ -2,7 +2,6 @@ package com.amouri_coding.FitGear.training.exercise;
 
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +15,24 @@ public class ExerciseMapper {
 
         return Exercise.builder()
                 .title(request.getTitle())
-                .day(trainingDay)
+                .trainingDay(trainingDay)
                 .exerciseUrl(request.getExerciseUrl())
                 .restTime(request.getRestTime())
                 .numberOfReps(request.getNumberOfReps())
                 .numberOfSets(request.getNumberOfSets())
+                .build()
+                ;
+    }
+
+    public ExerciseResponse toExerciseResponse(Exercise exercise) {
+        return ExerciseResponse.builder()
+                .id(exercise.getId())
+                .trainingDayId(exercise.getTrainingDay().getId())
+                .title(exercise.getTitle())
+                .exerciseUrl(exercise.getExerciseUrl())
+                .restTime(exercise.getRestTime())
+                .numberOfSets(exercise.getNumberOfSets())
+                .numberOfReps(exercise.getNumberOfReps())
                 .build()
                 ;
     }

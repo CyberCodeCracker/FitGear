@@ -23,7 +23,7 @@ public class TrainingDay {
 
     @ManyToOne
     @JoinColumn(name = "PROGRAM_ID")
-    private TrainingProgram program;
+    private TrainingProgram trainingProgram;
 
     @Column(name = "TITLE", nullable = false)
     private String title;
@@ -32,7 +32,7 @@ public class TrainingDay {
     @Column(name = "DAY")
     private DayOfWeek dayOfWeek;
 
-    @OneToMany(mappedBy = "day")
+    @OneToMany(mappedBy = "trainingDay")
     private List<Exercise> exercises;
 
     @Column(name = "BURNED_CALORIES", nullable = false)

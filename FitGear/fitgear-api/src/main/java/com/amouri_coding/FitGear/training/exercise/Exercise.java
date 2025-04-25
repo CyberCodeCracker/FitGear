@@ -20,9 +20,6 @@ public class Exercise {
     @Column(name = "TITLE")
     private String title;
 
-    @Column(name = "REST_TIME")
-    private String restTime;
-
     @Column(name = "EXERCISE_URL")
     private String exerciseUrl;
 
@@ -32,7 +29,10 @@ public class Exercise {
     @Column(name = "NUMBER_OF_REPS")
     private int numberOfReps;
 
+    @Column(name = "REST_TIME")
+    private int restTime;
+
     @ManyToOne
     @JoinColumn(name = "TRAINING_DAY_ID")
-    private TrainingDay day;
+    private TrainingDay trainingDay;
 }
