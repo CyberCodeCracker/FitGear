@@ -4,6 +4,8 @@ import com.amouri_coding.FitGear.training.exercise.Exercise;
 import com.amouri_coding.FitGear.training.exercise.ExerciseMapper;
 import com.amouri_coding.FitGear.training.exercise.ExerciseResponse;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgramMapper;
+import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +17,9 @@ public class TrainingDayMapper {
 
     private final ExerciseMapper exerciseMapper;
 
-    public TrainingDay toTrainingDay(TrainingDayRequest request, TrainingProgram program) {
+    public TrainingDay toTrainingDay(TrainingDayRequest request) {
 
         TrainingDay trainingDay = TrainingDay.builder()
-                .trainingProgram(program)
                 .title(request.getTitle())
                 .dayOfWeek(request.getDay())
                 .estimatedBurnedCalories(request.getEstimatedBurnedCalories())

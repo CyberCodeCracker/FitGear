@@ -26,7 +26,8 @@ public class TrainingProgramMapper {
 
         List<TrainingDay> mappedTrainingDays = request.getTrainingDays()
                 .stream()
-                .map(req -> trainingDayMapper.toTrainingDay(req, trainingProgram))
+                .map(req -> trainingDayMapper.toTrainingDay(req))
+                .peek(trainingDay -> trainingDay.setTrainingProgram(trainingProgram))
                 .toList()
                 ;
 

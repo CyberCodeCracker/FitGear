@@ -1,5 +1,8 @@
 package com.amouri_coding.FitGear.training.management;
 
+import com.amouri_coding.FitGear.training.training_day.TrainingDay;
+import com.amouri_coding.FitGear.training.training_day.TrainingDayRequest;
+import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramResponse;
@@ -41,6 +44,20 @@ public class TrainingController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(service.getProgramOfClient(clientId, programId, authentication));
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @PatchMapping("/edit-day/{day-id}")
+    public ResponseEntity<TrainingDayResponse> editDay(
+            @PathVariable(value = "day-id") Long dayId,
+            @RequestParam Long clientId,
+            @RequestParam Long coachId,
+            @RequestParam Long programId,
+            @RequestBody TrainingDayRequest request,
+            Authentication authentication
+            ) {
+        TrainingDayResponse updatedTrainingDay = service.editTrainingDay(dayId, clientId, coachId, programId, request, authentication);
+        return ResponseEntity.ok(updatedTrainingDay);
     }
 
 }

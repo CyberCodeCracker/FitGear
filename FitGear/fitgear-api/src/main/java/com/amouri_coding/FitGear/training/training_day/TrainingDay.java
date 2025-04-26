@@ -32,7 +32,7 @@ public class TrainingDay {
     @Column(name = "DAY")
     private DayOfWeek dayOfWeek;
 
-    @OneToMany(mappedBy = "trainingDay")
+    @OneToMany(mappedBy = "trainingDay", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Exercise> exercises;
 
     @Column(name = "BURNED_CALORIES", nullable = false)

@@ -21,7 +21,7 @@ public class TrainingProgram {
     @Column(name = "ID")
     private Long id;
 
-    @OneToMany(mappedBy = "trainingProgram")
+    @OneToMany(mappedBy = "trainingProgram", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TrainingDay> trainingDays;
 
     @OneToOne
