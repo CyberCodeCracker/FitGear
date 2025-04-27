@@ -10,7 +10,6 @@ import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import com.amouri_coding.FitGear.user.coach.CoachRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,7 @@ public class TrainingService {
     private final ExerciseMapper exerciseMapper;
     private final CoachRepository coachRepository;
 
-    public void assignProgram(Long clientId, @Valid TrainingProgramRequest request, Authentication authentication, HttpServletResponse response) {
+    public void assignProgram(Long clientId, @Valid TrainingProgramRequest request, Authentication authentication) {
 
         if (authentication == null) {
             log.error("No authentication found");
@@ -155,11 +154,23 @@ public class TrainingService {
             throw new IllegalStateException("This training day isn't part of this training program");
         }
 
+        trainingDay.setTrainingProgram(trainingProgram);
         trainingDay.setTitle(request.getTitle());
         trainingDay.setDayOfWeek(request.getDay());
         trainingDay.setEstimatedBurnedCalories(request.getEstimatedBurnedCalories());
 
+        List<Exercise> mappedExercises = request.getExercises()
+                .stream()
+                .map(ex -> exerciseMapper.toExercise(ex))
+                .peek(exercise -> exercise.setTrainingDay(trainingDay))
+                .toList()
+                ;
+
+        trainingDay.getExercises().clear();
+        trainingDay.getExercises().addAll(mappedExercises);
+
         trainingDayRepository.save(trainingDay);
+        exerciseRepository.saveAll(mappedExercises);
         return trainingDayMapper.toTrainingDayResponse(trainingDay);
     }
 

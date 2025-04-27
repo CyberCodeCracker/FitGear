@@ -1,13 +1,10 @@
 package com.amouri_coding.FitGear.training.management;
 
-import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayRequest;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
-import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,10 +27,9 @@ public class TrainingController {
     public void assignProgram(
             @RequestParam Long clientId,
             @RequestBody @Valid TrainingProgramRequest request,
-            Authentication authentication,
-            HttpServletResponse response
-            ) {
-        service.assignProgram(clientId, request, authentication, response);
+            Authentication authentication
+    ) {
+        service.assignProgram(clientId, request, authentication);
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")

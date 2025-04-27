@@ -23,14 +23,12 @@ public class TrainingDayMapper {
                 .title(request.getTitle())
                 .dayOfWeek(request.getDay())
                 .estimatedBurnedCalories(request.getEstimatedBurnedCalories())
-                .build()
-                ;
+                .build();
 
         List<Exercise> mappedExercises = request.getExercises()
                 .stream()
-                .map(req -> exerciseMapper.toExercise(req, trainingDay))
-                .toList()
-                ;
+                .map(req -> exerciseMapper.toExercise(req))
+                .toList();
 
         trainingDay.setExercises(mappedExercises);
 
@@ -42,8 +40,7 @@ public class TrainingDayMapper {
         List<ExerciseResponse> mappedExercises = trainingDay.getExercises()
                 .stream()
                 .map(exerciseMapper::toExerciseResponse)
-                .toList()
-                ;
+                .toList();
 
         return TrainingDayResponse.builder()
                 .id(trainingDay.getId())

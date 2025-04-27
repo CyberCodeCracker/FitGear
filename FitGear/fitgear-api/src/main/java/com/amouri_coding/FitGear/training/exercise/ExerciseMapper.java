@@ -11,11 +11,10 @@ public class ExerciseMapper {
 
     private final TrainingDayRepository trainingDayRepository;
 
-    public Exercise toExercise(ExerciseRequest request, TrainingDay trainingDay) {
+    public Exercise toExercise(ExerciseRequest request) {
 
         return Exercise.builder()
                 .title(request.getTitle())
-                .trainingDay(trainingDay)
                 .exerciseUrl(request.getExerciseUrl())
                 .restTime(request.getRestTime())
                 .numberOfReps(request.getNumberOfReps())
