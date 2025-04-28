@@ -13,6 +13,7 @@ public class ExerciseResponse {
     private Long trainingDayId;
     private String title;
     private String exerciseUrl;
+    private int exerciseNumber;
     private int restTime;
     private int numberOfSets;
     private int numberOfReps;

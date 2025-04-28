@@ -1,6 +1,7 @@
 package com.amouri_coding.FitGear.user.coach;
 
 import com.amouri_coding.FitGear.common.PageResponse;
+import com.amouri_coding.FitGear.common.SecurityUtils;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientMapper;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
@@ -28,24 +29,10 @@ public class CoachService {
 
     public PageResponse<ClientResponse> showAllClients(int page, int size, Authentication authentication) {
 
-        if (authentication == null) {
-            log.error("No authentication found");
-            throw new AccessDeniedException("Authentication required");
-        }
-        if (!authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
-            throw new AccessDeniedException("You are not a coach. Illegal operation");
-        }
-
-        Object principal = authentication.getPrincipal();
-        Coach coach = ((Coach) principal);
-
-        if (coach == null) {
-            throw new IllegalStateException("No coach found");
-        }
+        Coach connectedCoach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").descending());
-        Page<Client> clients = clientRepository.findAllClientsByCoachId(pageable, coach.getId());
+        Page<Client> clients = clientRepository.findAllClientsByCoachId(pageable, connectedCoach.getId());
         List<ClientResponse> clientResponses = clients.stream()
                 .map(clientMapper::toClientResponse)
                 .toList()
@@ -63,24 +50,10 @@ public class CoachService {
 
     public PageResponse<ClientResponse> showClientsByName(String clientName, int page, int size, Authentication authentication) {
 
-        if (authentication == null) {
-            log.error("No authentication found");
-            throw new AccessDeniedException("Authentication required");
-        }
-        if (!authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
-            throw new AccessDeniedException("You are not a coach. Illegal operation");
-        }
-
-        Object principal = authentication.getPrincipal();
-        Coach coach = ((Coach) principal);
-
-        if (coach == null) {
-            throw new IllegalStateException("No coach found");
-        }
+        Coach connectedCoach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").descending());
-        Page<Client> clients = clientRepository.findAllClientsByName(clientName, pageable, coach.getId());
+        Page<Client> clients = clientRepository.findAllClientsByName(clientName, pageable, connectedCoach.getId());
         List<ClientResponse> clientResponses = clients.stream()
                 .map(clientMapper::toClientResponse)
                 .toList()
@@ -98,25 +71,15 @@ public class CoachService {
 
     public ClientResponse getClientID(Long clientId, Authentication authentication) {
 
-        if (authentication == null) {
-            log.error("No authentication found");
-            throw new AccessDeniedException("Authentication required");
-        }
+        Coach connectedCoach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
-        if (!authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_COACH"))) {
-            throw new AccessDeniedException("You are not a coach. Illegal operation");
-        }
-
-        Object principal = authentication.getPrincipal();
-        Coach coach = ((Coach) principal);
-
-        if (coach == null) {
-            throw new IllegalStateException("No coach found");
-        }
-
-        return clientRepository.findById(clientId)
-                .map(clientMapper::toClientResponse)
+        Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+
+        if (!client.getCoach().equals(connectedCoach)) {
+            throw new IllegalStateException("This isn't your client");
+        }
+
+        return clientMapper.toClientResponse(client);
     }
 }

@@ -15,6 +15,7 @@ public class ExerciseMapper {
 
         return Exercise.builder()
                 .title(request.getTitle())
+                .number(request.getExerciseNumber())
                 .exerciseUrl(request.getExerciseUrl())
                 .restTime(request.getRestTime())
                 .numberOfReps(request.getNumberOfReps())
@@ -28,6 +29,7 @@ public class ExerciseMapper {
                 .id(exercise.getId())
                 .trainingDayId(exercise.getTrainingDay().getId())
                 .title(exercise.getTitle())
+                .exerciseNumber(exercise.getNumber())
                 .exerciseUrl(exercise.getExerciseUrl())
                 .restTime(exercise.getRestTime())
                 .numberOfSets(exercise.getNumberOfSets())

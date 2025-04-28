@@ -1,5 +1,7 @@
 package com.amouri_coding.FitGear.training.management;
 
+import com.amouri_coding.FitGear.training.exercise.ExerciseRequest;
+import com.amouri_coding.FitGear.training.exercise.ExerciseResponse;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayRequest;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgramRequest;
@@ -24,12 +26,36 @@ public class TrainingController {
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
     @PostMapping("/assign-program")
     @ResponseStatus(HttpStatus.CREATED)
-    public void assignProgram(
+    public void assignTrainingProgram(
             @RequestParam Long clientId,
             @RequestBody @Valid TrainingProgramRequest request,
             Authentication authentication
     ) {
         service.assignProgram(clientId, request, authentication);
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @PostMapping("/add-day")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addTrainingDay(
+            @RequestParam Long programId,
+            @RequestParam Long clientId,
+            @RequestBody @Valid TrainingDayRequest request,
+            Authentication authentication
+    ) {
+        service.addTrainingDay(programId, clientId, request, authentication);
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @PostMapping("/add-exercise")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addExercise(
+            @RequestParam Long dayId,
+            @RequestParam Long clientId,
+            @RequestBody @Valid ExerciseRequest request,
+            Authentication authentication
+    ) {
+        service.addExercise(dayId, clientId, request, authentication);
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
@@ -43,17 +69,60 @@ public class TrainingController {
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @GetMapping("/get-day")
+    public ResponseEntity<TrainingDayResponse> getDayOfClient(
+            @RequestParam Long dayId,
+            @RequestParam Long clientId,
+            @RequestParam Long programId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getDayOfClient(clientId, programId, dayId, authentication));
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @GetMapping("/get-exercise")
+    public ResponseEntity<ExerciseResponse> getExerciseOfClient(
+            @RequestParam Long exerciseId,
+            @RequestParam Long dayId,
+            @RequestParam Long clientId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getExerciseOfClient(exerciseId, dayId, clientId, authentication));
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
     @PatchMapping("/edit-day/{day-id}")
-    public ResponseEntity<TrainingDayResponse> editDay(
+    public ResponseEntity<TrainingDayResponse> editTrainingDay(
             @PathVariable(value = "day-id") Long dayId,
             @RequestParam Long clientId,
-            @RequestParam Long coachId,
             @RequestParam Long programId,
             @RequestBody TrainingDayRequest request,
             Authentication authentication
             ) {
-        TrainingDayResponse updatedTrainingDay = service.editTrainingDay(dayId, clientId, coachId, programId, request, authentication);
+        TrainingDayResponse updatedTrainingDay = service.editTrainingDay(dayId, clientId, programId, request, authentication);
         return ResponseEntity.ok(updatedTrainingDay);
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @PatchMapping("/edit-exercise/{exercise-id}")
+    public ResponseEntity<ExerciseResponse> editExercise(
+            @PathVariable(value = "exercise-id") Long exerciseId,
+            @RequestParam Long clientId,
+            @RequestParam Long dayId,
+            @RequestBody ExerciseRequest request,
+            Authentication authentication
+    ) {
+        ExerciseResponse updatedExercise = service.editExercise(exerciseId, clientId, dayId, request, authentication);
+        return ResponseEntity.ok(updatedExercise);
+    }
+
+    @PreAuthorize(value = "hasRole('ROLE_COACH')")
+    @DeleteMapping("/delete-program/{program-id}")
+    public void deleteTrainingProgram(
+            @PathVariable(value = "program-id") Long programId,
+            Authentication authentication
+    ) {
+        service.deleteTrainingProgram(programId, authentication);
     }
 
 }

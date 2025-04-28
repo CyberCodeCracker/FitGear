@@ -20,6 +20,9 @@ public class Exercise {
     @Column(name = "TITLE")
     private String title;
 
+    @Column(name = "NUMBER")
+    private int number;
+
     @Column(name = "EXERCISE_URL")
     private String exerciseUrl;
 

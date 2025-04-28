@@ -15,6 +15,9 @@ public class ExerciseRequest {
     @NotBlank(message = "Title can't be blank")
     private String title;
 
+    @NotNull(message = "Exercise number can't be null")
+    private int exerciseNumber;
+
     private String exerciseUrl;
 
     @NotNull(message = "Rest Time can't be blank")
