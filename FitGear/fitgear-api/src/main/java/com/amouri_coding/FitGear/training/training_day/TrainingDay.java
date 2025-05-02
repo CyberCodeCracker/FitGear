@@ -6,6 +6,7 @@ import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -37,4 +38,10 @@ public class TrainingDay {
 
     @Column(name = "BURNED_CALORIES", nullable = false)
     private int estimatedBurnedCalories;
+
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private LocalDateTime updatedAt;
 }

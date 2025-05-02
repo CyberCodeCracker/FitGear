@@ -6,6 +6,7 @@ import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -30,5 +31,11 @@ public class TrainingProgram {
     @ManyToOne
     @JoinColumn(name = "COACH_ID")
     private Coach coach;
+
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private LocalDateTime updatedAt;
 
 }

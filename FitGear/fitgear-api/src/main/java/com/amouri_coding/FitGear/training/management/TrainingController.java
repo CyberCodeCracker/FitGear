@@ -16,113 +16,137 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/clients/{clientId}")
 @RequiredArgsConstructor
-@RequestMapping("training")
 @Tag(name = "Training")
 public class TrainingController {
 
     private final TrainingService service;
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PostMapping("/assign-program")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @PostMapping("/programs")
     @ResponseStatus(HttpStatus.CREATED)
     public void assignTrainingProgram(
-            @RequestParam Long clientId,
+            @PathVariable Long clientId,
             @RequestBody @Valid TrainingProgramRequest request,
             Authentication authentication
     ) {
         service.assignProgram(clientId, request, authentication);
     }
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PostMapping("/add-day")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @GetMapping("/programs/{programId}")
+    public ResponseEntity<TrainingProgramResponse> getProgramOfClient(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getProgramOfClient(clientId, programId, authentication));
+    }
+
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @DeleteMapping("/programs/{programId}")
+    public void deleteTrainingProgram(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            Authentication authentication
+    ) {
+        service.deleteTrainingProgram(programId, clientId, authentication);
+    }
+
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @PostMapping("/programs/{programId}/days")
     @ResponseStatus(HttpStatus.CREATED)
     public void addTrainingDay(
-            @RequestParam Long programId,
-            @RequestParam Long clientId,
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
             @RequestBody @Valid TrainingDayRequest request,
             Authentication authentication
     ) {
         service.addTrainingDay(programId, clientId, request, authentication);
     }
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PostMapping("/add-exercise")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @GetMapping("/programs/{programId}/days/{dayId}")
+    public ResponseEntity<TrainingDayResponse> getDayOfClient(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getDayOfClient(dayId, clientId, programId, authentication));
+    }
+
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @PatchMapping("/programs/{programId}/days/{dayId}")
+    public ResponseEntity<TrainingDayResponse> editTrainingDay(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            @RequestBody @Valid TrainingDayRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.editTrainingDay(dayId, clientId, programId, request, authentication));
+    }
+
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @DeleteMapping("/programs/{programId}/days/{dayId}")
+    public void deleteTrainingDay(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            Authentication authentication
+    ) {
+        service.deleteTrainingDay(dayId, clientId, programId, authentication);
+    }
+
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @PostMapping("/programs/{programId}/days/{dayId}/exercises")
     @ResponseStatus(HttpStatus.CREATED)
     public void addExercise(
-            @RequestParam Long dayId,
-            @RequestParam Long clientId,
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
             @RequestBody @Valid ExerciseRequest request,
             Authentication authentication
     ) {
-        service.addExercise(dayId, clientId, request, authentication);
+        service.addExercise(programId, dayId, clientId, request, authentication);
     }
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @GetMapping("/get-program")
-    public ResponseEntity<TrainingProgramResponse> getProgramOfClient(
-            @RequestParam Long clientId,
-            @RequestParam Long programId,
-            Authentication authentication
-    ) {
-        return ResponseEntity.ok(service.getProgramOfClient(clientId, programId, authentication));
-    }
-
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @GetMapping("/get-day")
-    public ResponseEntity<TrainingDayResponse> getDayOfClient(
-            @RequestParam Long dayId,
-            @RequestParam Long clientId,
-            @RequestParam Long programId,
-            Authentication authentication
-    ) {
-        return ResponseEntity.ok(service.getDayOfClient(clientId, programId, dayId, authentication));
-    }
-
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @GetMapping("/get-exercise")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @GetMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
     public ResponseEntity<ExerciseResponse> getExerciseOfClient(
-            @RequestParam Long exerciseId,
-            @RequestParam Long dayId,
-            @RequestParam Long clientId,
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            @PathVariable Long exerciseId,
             Authentication authentication
     ) {
         return ResponseEntity.ok(service.getExerciseOfClient(exerciseId, dayId, clientId, authentication));
     }
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PatchMapping("/edit-day/{day-id}")
-    public ResponseEntity<TrainingDayResponse> editTrainingDay(
-            @PathVariable(value = "day-id") Long dayId,
-            @RequestParam Long clientId,
-            @RequestParam Long programId,
-            @RequestBody TrainingDayRequest request,
-            Authentication authentication
-            ) {
-        TrainingDayResponse updatedTrainingDay = service.editTrainingDay(dayId, clientId, programId, request, authentication);
-        return ResponseEntity.ok(updatedTrainingDay);
-    }
-
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @PatchMapping("/edit-exercise/{exercise-id}")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @PatchMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
     public ResponseEntity<ExerciseResponse> editExercise(
-            @PathVariable(value = "exercise-id") Long exerciseId,
-            @RequestParam Long clientId,
-            @RequestParam Long dayId,
-            @RequestBody ExerciseRequest request,
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            @PathVariable Long exerciseId,
+            @RequestBody @Valid ExerciseRequest request,
             Authentication authentication
     ) {
-        ExerciseResponse updatedExercise = service.editExercise(exerciseId, clientId, dayId, request, authentication);
-        return ResponseEntity.ok(updatedExercise);
+        return ResponseEntity.ok(service.editExercise(exerciseId, clientId, dayId, request, authentication));
     }
 
-    @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @DeleteMapping("/delete-program/{program-id}")
-    public void deleteTrainingProgram(
-            @PathVariable(value = "program-id") Long programId,
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    @DeleteMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
+    public void deleteExercise(
+            @PathVariable Long clientId,
+            @PathVariable Long programId,
+            @PathVariable Long dayId,
+            @PathVariable Long exerciseId,
             Authentication authentication
     ) {
-        service.deleteTrainingProgram(programId, authentication);
+        service.deleteExercise(exerciseId, clientId, programId, dayId, authentication);
     }
-
 }

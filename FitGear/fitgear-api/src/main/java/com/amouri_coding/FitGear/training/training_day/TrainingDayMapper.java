@@ -9,7 +9,9 @@ import com.amouri_coding.FitGear.training.training_program.TrainingProgramReques
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +25,14 @@ public class TrainingDayMapper {
                 .title(request.getTitle())
                 .dayOfWeek(request.getDay())
                 .estimatedBurnedCalories(request.getEstimatedBurnedCalories())
-                .build();
+                .build()
+                ;
 
         List<Exercise> mappedExercises = request.getExercises()
                 .stream()
                 .map(req -> exerciseMapper.toExercise(req))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new))
+                ;
 
         trainingDay.setExercises(mappedExercises);
 
@@ -40,7 +44,8 @@ public class TrainingDayMapper {
         List<ExerciseResponse> mappedExercises = trainingDay.getExercises()
                 .stream()
                 .map(exerciseMapper::toExerciseResponse)
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new))
+                ;
 
         return TrainingDayResponse.builder()
                 .id(trainingDay.getId())

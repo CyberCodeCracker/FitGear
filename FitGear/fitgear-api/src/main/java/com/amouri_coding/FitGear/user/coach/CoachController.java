@@ -29,7 +29,7 @@ public class CoachController {
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @GetMapping("/show-client/{client-name}")
+    @GetMapping("/show-client-name/{client-name}")
     public ResponseEntity<PageResponse<ClientResponse>> showClientsByName(
             @PathVariable("client-name") String clientName,
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
@@ -40,12 +40,12 @@ public class CoachController {
     }
 
     @PreAuthorize(value = "hasRole('ROLE_COACH')")
-    @GetMapping("/{client-id}")
-    public ResponseEntity<ClientResponse> getClientId(
+    @GetMapping("/show-client-id/{client-id}")
+    public ResponseEntity<ClientResponse> getClientById(
             @PathVariable(value = "client-id") Long clientId,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(coachService.getClientID(clientId, authentication));
+        return ResponseEntity.ok(coachService.getClientByID(clientId, authentication));
     }
 
 }

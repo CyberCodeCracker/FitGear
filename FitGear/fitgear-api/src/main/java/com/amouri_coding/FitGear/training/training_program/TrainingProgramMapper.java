@@ -8,7 +8,9 @@ import com.amouri_coding.FitGear.user.coach.Coach;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class TrainingProgramMapper {
                 .stream()
                 .map(req -> trainingDayMapper.toTrainingDay(req))
                 .peek(trainingDay -> trainingDay.setTrainingProgram(trainingProgram))
-                .toList()
+                .collect(Collectors.toCollection(ArrayList::new))
                 ;
 
         trainingProgram.setTrainingDays(mappedTrainingDays);
@@ -41,7 +43,7 @@ public class TrainingProgramMapper {
         List<TrainingDayResponse> mappedTrainingDays = trainingProgram.getTrainingDays()
                 .stream()
                 .map(trainingDayMapper::toTrainingDayResponse)
-                .toList()
+                .collect(Collectors.toCollection(ArrayList::new))
                 ;
 
         return TrainingProgramResponse.builder()

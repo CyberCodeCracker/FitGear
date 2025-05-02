@@ -4,6 +4,8 @@ import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -38,4 +40,10 @@ public class Exercise {
     @ManyToOne
     @JoinColumn(name = "TRAINING_DAY_ID")
     private TrainingDay trainingDay;
+
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private LocalDateTime updatedAt;
 }

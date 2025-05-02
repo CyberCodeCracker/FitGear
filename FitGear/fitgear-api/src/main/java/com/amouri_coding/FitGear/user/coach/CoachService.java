@@ -69,7 +69,7 @@ public class CoachService {
         );
     }
 
-    public ClientResponse getClientID(Long clientId, Authentication authentication) {
+    public ClientResponse getClientByID(Long clientId, Authentication authentication) {
 
         Coach connectedCoach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
