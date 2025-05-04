@@ -16,7 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/clients/{clientId}")
+@RequestMapping("/clients/{clientId}/training")
 @RequiredArgsConstructor
 @Tag(name = "Training")
 public class TrainingController {
@@ -24,7 +24,7 @@ public class TrainingController {
     private final TrainingService service;
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @PostMapping("/programs")
+    @PostMapping("/program")
     @ResponseStatus(HttpStatus.CREATED)
     public void assignTrainingProgram(
             @PathVariable Long clientId,

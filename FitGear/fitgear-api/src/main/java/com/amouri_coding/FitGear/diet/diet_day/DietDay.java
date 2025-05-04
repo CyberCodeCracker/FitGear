@@ -4,15 +4,14 @@ import com.amouri_coding.FitGear.common.DayOfWeek;
 import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
 import com.amouri_coding.FitGear.diet.meal.Meal;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -24,21 +23,64 @@ public class DietDay {
     private Long id;
 
     @Column(name = "DAY")
+    @Enumerated(EnumType.STRING)
     private DayOfWeek day;
 
-    @ManyToOne
-    @JoinColumn(name = "DIET_PROGRAM_ID")
-    private DietProgram program;
-
-    @OneToMany(mappedBy = "day")
-    private List<Meal> meals;
-
     @Column(name = "TOTAL_CALS")
-    private double totalCaloriesInDay;
+    private int totalCaloriesInDay;
 
     @Column(name = "TOTAL_PROTEIN")
     private double totalProteinInDay;
 
     @Column(name = "TOTAL_CARBS")
     private double totalCarbsInDay;
+
+    @Column(name = "TOTAL_FATS")
+    private double totalFatsInDay;
+
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "DIET_PROGRAM_ID")
+    private DietProgram program;
+
+    @OneToMany(mappedBy = "day", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Meal> meals;
+
+    public int calculateTotalCalories() {
+        this.totalCaloriesInDay = meals.stream()
+                .mapToInt(meal -> meal.getCalories())
+                .sum()
+                ;
+        return totalCaloriesInDay;
+    }
+
+    public double calculateTotalProtein() {
+        this.totalProteinInDay = meals.stream()
+                .mapToDouble(meal -> meal.getProtein())
+                .sum()
+                ;
+        return totalProteinInDay;
+    }
+
+    public double calculateTotalCarbs() {
+        this.totalCarbsInDay = meals.stream()
+                .mapToDouble(meal -> meal.getCarbs())
+                .sum()
+                ;
+        return totalCarbsInDay;
+    }
+
+    public double calculateTotalFats() {
+        this.totalFatsInDay = meals.stream()
+                .mapToDouble(meal -> meal.getFats())
+                .sum()
+                ;
+        return totalFatsInDay;
+    }
+
 }

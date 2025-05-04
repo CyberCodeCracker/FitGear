@@ -5,6 +5,7 @@ import com.amouri_coding.FitGear.training.training_day.TrainingDayMapper;
 import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.coach.Coach;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,12 @@ import java.util.stream.Collectors;
 public class TrainingProgramMapper {
 
     private final TrainingDayMapper trainingDayMapper;
+    private final EntityManager entityManager;
 
-    public TrainingProgram toTrainingProgram(TrainingProgramRequest request, Client client, Coach coach) {
+    public TrainingProgram toTrainingProgram(TrainingProgramRequest request, Long clientId, Long coachId) {
+
+        Client client = entityManager.getReference(Client.class, clientId);
+        Coach coach = entityManager.getReference(Coach.class, coachId);
 
         TrainingProgram trainingProgram = TrainingProgram.builder()
                 .client(client)
@@ -34,7 +39,7 @@ public class TrainingProgramMapper {
                 ;
 
         trainingProgram.setTrainingDays(mappedTrainingDays);
-
+        client.setTrainingProgram(trainingProgram);
         return trainingProgram;
     }
 

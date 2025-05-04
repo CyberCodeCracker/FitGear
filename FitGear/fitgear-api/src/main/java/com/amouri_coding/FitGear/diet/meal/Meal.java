@@ -4,6 +4,7 @@ import com.amouri_coding.FitGear.diet.diet_day.DietDay;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -23,7 +24,7 @@ public class Meal {
     private String description;
 
     @Column(name = "TOTAL_CALORIES")
-    private int totalCalories;
+    private int calories;
 
     @Column(name = "PROTEIN")
     private double protein;
@@ -34,7 +35,14 @@ public class Meal {
     @Column(name = "FATS")
     private double fats;
 
-    private LocalTime time;
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "TIME_TO_EAT")
+    private LocalTime timeToEat;
 
     @ManyToOne
     @JoinColumn(name = "DIET_DAY_ID")

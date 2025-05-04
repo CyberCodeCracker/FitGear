@@ -31,6 +31,7 @@ public class TrainingDayMapper {
         List<Exercise> mappedExercises = request.getExercises()
                 .stream()
                 .map(req -> exerciseMapper.toExercise(req))
+                .peek(exercise -> exercise.setTrainingDay(trainingDay))
                 .collect(Collectors.toCollection(ArrayList::new))
                 ;
 

@@ -38,19 +38,22 @@ public class TrainingService {
     public void assignProgram(Long clientId, @Valid TrainingProgramRequest request, Authentication authentication) {
 
         Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
-        Client client = getClient(clientId);
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         if (!findCoachIdByClientId(clientId).equals(coach.getId())) {
             throw new AccessDeniedException("You can't assign a program to a client you don't coach");
         }
 
-        TrainingProgram program = trainingProgramMapper.toTrainingProgram(request, client, coach);
+        if (client.getTrainingProgram() != null) {
+            TrainingProgram oldProgram = client.getTrainingProgram();
+            client.setTrainingProgram(null);
+            trainingProgramRepository.delete(oldProgram);
+        }
+
+        TrainingProgram program = trainingProgramMapper.toTrainingProgram(request, clientId, coach.getId());
         program.setCreatedAt(LocalDateTime.now());
         List<TrainingDay> days = program.getTrainingDays();
-        List<Exercise> exercises = days.stream()
-                .flatMap(day -> day.getExercises().stream())
-                .collect(Collectors.toList())
-                ;
 
         for (TrainingDay day : days) {
             day.setCreatedAt(LocalDateTime.now());
@@ -58,11 +61,7 @@ public class TrainingService {
                 exercise.setTrainingDay(day);
                 exercise.setCreatedAt(LocalDateTime.now());
             }
-            log.info("TrainingDays list class: {}", program.getTrainingDays().getClass().getName());
-            log.info("Exercises list class: {}", day.getExercises().getClass().getName());
         }
-
-        client.setTrainingProgram(program);
 
         try {
             trainingProgramRepository.save(program);
