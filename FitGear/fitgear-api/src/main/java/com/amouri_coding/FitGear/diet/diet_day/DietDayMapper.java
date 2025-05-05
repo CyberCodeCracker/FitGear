@@ -19,7 +19,7 @@ public class DietDayMapper {
     public DietDay toDietDay(DietDayRequest request) {
 
         DietDay dietDay = DietDay.builder()
-                .day(request.getDay())
+                .dayOfWeek(request.getDayOfWeek())
                 .totalCarbsInDay(request.getTotalCarbsInDay())
                 .totalCaloriesInDay(request.getTotalCaloriesInDay())
                 .totalProteinInDay(request.getTotalProteinInDay())
@@ -46,7 +46,7 @@ public class DietDayMapper {
                 ;
 
         DietDayResponse dayResponse = DietDayResponse.builder()
-                .day(dietDay.getDay())
+                .dayOfWeek(dietDay.getDayOfWeek())
                 .totalCarbsInDay(dietDay.getTotalCarbsInDay())
                 .totalCaloriesInDay(dietDay.getTotalCaloriesInDay())
                 .totalProteinInDay(dietDay.getTotalProteinInDay())
