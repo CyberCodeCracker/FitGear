@@ -1,11 +1,9 @@
 package com.amouri_coding.FitGear.diet.management;
 
+import com.amouri_coding.FitGear.common.DayOfWeek;
 import com.amouri_coding.FitGear.common.EntityUtils;
 import com.amouri_coding.FitGear.common.SecurityUtils;
-import com.amouri_coding.FitGear.diet.diet_day.DietDay;
-import com.amouri_coding.FitGear.diet.diet_day.DietDayMapper;
-import com.amouri_coding.FitGear.diet.diet_day.DietDayRepository;
-import com.amouri_coding.FitGear.diet.diet_day.DietDayRequest;
+import com.amouri_coding.FitGear.diet.diet_day.*;
 import com.amouri_coding.FitGear.diet.diet_program.*;
 import com.amouri_coding.FitGear.diet.meal.Meal;
 import com.amouri_coding.FitGear.diet.meal.MealMapper;
@@ -15,17 +13,23 @@ import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class NutritionService {
 
     private final ClientRepository clientRepository;
@@ -57,9 +61,22 @@ public class NutritionService {
         }
 
         DietProgram program = programMapper.toDietProgram(request, clientId, coach.getId());
+
         program.setCreatedAt(LocalDateTime.now());
 
         List<DietDay> days = program.getDays();
+        Set<DayOfWeek> seenDays = new HashSet<>();
+
+        for (DietDay day : days) {
+            log.info("Calories {}", day.getTotalCaloriesInDay());
+            if (!seenDays.add(day.getDayOfWeek())) {
+                throw new IllegalArgumentException(
+                        "Duplicate day found in diet program: "
+                                + day.getDayOfWeek() +
+                                " Each day of the week must be unique"
+                );
+            }
+        }
 
         for (DietDay day : days) {
             day.setCreatedAt(LocalDateTime.now());
@@ -134,17 +151,45 @@ public class NutritionService {
         }
 
         DietProgram program = entityUtils.getDietProgram(programId);
+        DayOfWeek newDayOfWeek = request.getDayOfWeek();
 
-        if (program.getDays().stream().peek(dietDay -> dietDay.getDayOfWeek()).equals(request.getDayOfWeek())) {
-            throw new IllegalStateException("This day already exists");
+        boolean dayExists = program.getDays().stream()
+                .anyMatch(dietDay -> dietDay.getDayOfWeek() == newDayOfWeek);
+
+        if (dayExists) {
+            throw new IllegalStateException("Day " + newDayOfWeek + " already exists in this program");
         }
 
         DietDay day = dietDayMapper.toDietDay(request);
         day.setCreatedAt(LocalDateTime.now());
+        day.setProgram(program);
+
         program.getDays().add(day);
         program.setUpdatedAt(LocalDateTime.now());
-        program.getDays().sort((d1,d2) -> d1.getDayOfWeek().compareTo(d2.getDayOfWeek()));
+
+        program.getDays().sort(Comparator.comparing(DietDay::getDayOfWeek));
+
         dietDayRepository.save(day);
         mealRepository.saveAll(day.getMeals());
+    }
+
+    public DietDayResponse getDietDay(Long clientId, Long programId, Long dayId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        DietDay day = entityUtils.getDietDay(dayId);
+        return dietDayMapper.toDietDayResponse(day);
     }
 }

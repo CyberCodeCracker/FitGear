@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 public class DietDayRequest {
 
-    @NotEmpty(message = "Day is required")
+    @NotNull(message = "Day is required")
     private DayOfWeek dayOfWeek;
 
     @NotEmpty(message = "Meals are required")

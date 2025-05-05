@@ -5,6 +5,7 @@ import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +28,8 @@ public class DietProgram {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "CREATED_AT")
+    @CreatedDate
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;

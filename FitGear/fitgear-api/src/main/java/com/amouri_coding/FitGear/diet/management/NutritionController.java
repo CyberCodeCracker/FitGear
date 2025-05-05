@@ -1,6 +1,7 @@
 package com.amouri_coding.FitGear.diet.management;
 
 import com.amouri_coding.FitGear.diet.diet_day.DietDayRequest;
+import com.amouri_coding.FitGear.diet.diet_day.DietDayResponse;
 import com.amouri_coding.FitGear.diet.diet_program.DietProgramRequest;
 import com.amouri_coding.FitGear.diet.diet_program.DietProgramResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +46,7 @@ public class NutritionController {
     @PreAuthorize("hasRole('ROLE_COACH')")
     public void deleteDietProgram(
             @PathVariable final Long clientId,
-            @PathVariable Long programId,
+            @PathVariable(value = "program-id") Long programId,
             Authentication authentication
     ) {
         service.deleteDietProgram(clientId, programId, authentication);
@@ -61,5 +62,16 @@ public class NutritionController {
             Authentication authentication
     ) {
         service.addDietDay(clientId, programId, request, authentication);
+    }
+
+    @GetMapping("/{program-id}/days/{day-id}")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    public ResponseEntity<DietDayResponse> getDietDay(
+            @PathVariable final Long clientId,
+            @PathVariable(value = "program-id") Long programId,
+            @PathVariable(value = "day-id") Long dayId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(service.getDietDay(clientId, programId, dayId, authentication));
     }
 }

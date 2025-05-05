@@ -5,6 +5,7 @@ import com.amouri_coding.FitGear.training.exercise.Exercise;
 import com.amouri_coding.FitGear.training.training_program.TrainingProgram;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +40,8 @@ public class TrainingDay {
     @Column(name = "BURNED_CALORIES", nullable = false)
     private int estimatedBurnedCalories;
 
-    @Column(name = "CREATED_AT")
+    @CreatedDate
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "UPDATED_AT")

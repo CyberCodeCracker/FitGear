@@ -5,6 +5,7 @@ import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
 import com.amouri_coding.FitGear.diet.meal.Meal;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +37,8 @@ public class DietDay {
     @Column(name = "TOTAL_FATS")
     private double totalFatsInDay;
 
-    @Column(name = "CREATED_AT")
+    @CreatedDate
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;

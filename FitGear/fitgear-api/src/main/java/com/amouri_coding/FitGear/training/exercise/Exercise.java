@@ -3,6 +3,7 @@ package com.amouri_coding.FitGear.training.exercise;
 import com.amouri_coding.FitGear.training.training_day.TrainingDay;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -37,7 +38,8 @@ public class Exercise {
     @JoinColumn(name = "TRAINING_DAY_ID")
     private TrainingDay trainingDay;
 
-    @Column(name = "CREATED_AT")
+    @CreatedDate
+    @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
