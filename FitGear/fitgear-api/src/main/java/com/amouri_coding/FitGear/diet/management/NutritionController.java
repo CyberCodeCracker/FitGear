@@ -41,7 +41,7 @@ public class NutritionController {
         return ResponseEntity.ok(service.getDietProgram(clientId, programId, authentication));
     }
 
-    @DeleteMapping("/{program-id/delete}")
+    @DeleteMapping("/{program-id}/delete")
     @PreAuthorize("hasRole('ROLE_COACH')")
     public void deleteDietProgram(
             @PathVariable final Long clientId,
