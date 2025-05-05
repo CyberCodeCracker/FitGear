@@ -14,7 +14,7 @@ import java.util.List;
 public class DietDayRequest {
 
     @NotEmpty(message = "Day is required")
-    private DayOfWeek day;
+    private DayOfWeek dayOfWeek;
 
     @NotEmpty(message = "Meals are required")
     private List<MealRequest> meals;

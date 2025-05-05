@@ -24,23 +24,20 @@ public class DietDay {
 
     @Column(name = "DAY")
     @Enumerated(EnumType.STRING)
-    private DayOfWeek day;
+    private DayOfWeek dayOfWeek;
 
     @Column(name = "TOTAL_CALS")
     private int totalCaloriesInDay;
 
     @Column(name = "TOTAL_PROTEIN")
     private double totalProteinInDay;
-
     @Column(name = "TOTAL_CARBS")
     private double totalCarbsInDay;
-
     @Column(name = "TOTAL_FATS")
     private double totalFatsInDay;
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
-
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 

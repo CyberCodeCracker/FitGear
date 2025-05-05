@@ -35,7 +35,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @GetMapping("/programs/{programId}")
+    @GetMapping("/{programId}")
     public ResponseEntity<TrainingProgramResponse> getProgramOfClient(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -45,7 +45,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @DeleteMapping("/programs/{programId}")
+    @DeleteMapping("/{programId}")
     public void deleteTrainingProgram(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -55,7 +55,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @PostMapping("/programs/{programId}/days")
+    @PostMapping("/{programId}/days")
     @ResponseStatus(HttpStatus.CREATED)
     public void addTrainingDay(
             @PathVariable Long clientId,
@@ -67,7 +67,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @GetMapping("/programs/{programId}/days/{dayId}")
+    @GetMapping("/{programId}/days/{dayId}")
     public ResponseEntity<TrainingDayResponse> getDayOfClient(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -78,7 +78,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @PatchMapping("/programs/{programId}/days/{dayId}")
+    @PatchMapping("/{programId}/days/{dayId}")
     public ResponseEntity<TrainingDayResponse> editTrainingDay(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -90,7 +90,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @DeleteMapping("/programs/{programId}/days/{dayId}")
+    @DeleteMapping("/{programId}/days/{dayId}")
     public void deleteTrainingDay(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -101,7 +101,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @PostMapping("/programs/{programId}/days/{dayId}/exercises")
+    @PostMapping("/{programId}/days/{dayId}/exercises")
     @ResponseStatus(HttpStatus.CREATED)
     public void addExercise(
             @PathVariable Long clientId,
@@ -114,7 +114,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @GetMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
+    @GetMapping("/{programId}/days/{dayId}/exercises/{exerciseId}")
     public ResponseEntity<ExerciseResponse> getExerciseOfClient(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -126,7 +126,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @PatchMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
+    @PatchMapping("/{programId}/days/{dayId}/exercises/{exerciseId}")
     public ResponseEntity<ExerciseResponse> editExercise(
             @PathVariable Long clientId,
             @PathVariable Long programId,
@@ -139,7 +139,7 @@ public class TrainingController {
     }
 
     @PreAuthorize("hasRole('ROLE_COACH')")
-    @DeleteMapping("/programs/{programId}/days/{dayId}/exercises/{exerciseId}")
+    @DeleteMapping("/{programId}/days/{dayId}/exercises/{exerciseId}")
     public void deleteExercise(
             @PathVariable Long clientId,
             @PathVariable Long programId,

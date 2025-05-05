@@ -1,20 +1,18 @@
 package com.amouri_coding.FitGear.diet.management;
 
+import com.amouri_coding.FitGear.common.EntityUtils;
 import com.amouri_coding.FitGear.common.SecurityUtils;
 import com.amouri_coding.FitGear.diet.diet_day.DietDay;
 import com.amouri_coding.FitGear.diet.diet_day.DietDayMapper;
 import com.amouri_coding.FitGear.diet.diet_day.DietDayRepository;
-import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
-import com.amouri_coding.FitGear.diet.diet_program.DietProgramMapper;
-import com.amouri_coding.FitGear.diet.diet_program.DietProgramRepository;
-import com.amouri_coding.FitGear.diet.diet_program.DietProgramRequest;
+import com.amouri_coding.FitGear.diet.diet_day.DietDayRequest;
+import com.amouri_coding.FitGear.diet.diet_program.*;
 import com.amouri_coding.FitGear.diet.meal.Meal;
 import com.amouri_coding.FitGear.diet.meal.MealMapper;
 import com.amouri_coding.FitGear.diet.meal.MealRepository;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,24 +33,27 @@ public class NutritionService {
     private final DietDayRepository dietDayRepository;
     private final MealRepository mealRepository;
 
+    private final EntityUtils entityUtils;
+
     private final DietProgramMapper programMapper;
     private final DietDayMapper dietDayMapper;
     private final MealMapper mealMapper;
 
-    public void assignDietingProgram(Long clientId, @Valid DietProgramRequest request, Authentication authentication) {
+    public void assignDietProgram(Long clientId, @Valid DietProgramRequest request, Authentication authentication) {
 
         Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
-        Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        Client client = entityUtils.getClient(clientId);
 
-        if (!findCoachIdByClientId(clientId).equals(coach.getId())) {
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
             throw new AccessDeniedException("This client isn't yours");
         }
 
         if (client.getDietProgram() != null) {
             DietProgram oldProgram = client.getDietProgram();
+            oldProgram.setClient(null);
             client.setDietProgram(null);
             dietProgramRepository.delete(oldProgram);
+            dietProgramRepository.flush();
         }
 
         DietProgram program = programMapper.toDietProgram(request, clientId, coach.getId());
@@ -70,53 +71,80 @@ public class NutritionService {
         dietProgramRepository.save(program);
     }
 
-    private Client getClient(Long clientId) {
-        return clientRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+    public DietProgramResponse getDietProgram(Long clientId, Long programId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        DietProgram program = entityUtils.getDietProgram(programId);
+        DietProgramResponse programResponse = programMapper.toDietProgramResponse(program);
+        return programResponse;
     }
 
-    private DietProgram getDietProgram(Long dietProgramId) {
-        return dietProgramRepository.findById(dietProgramId)
-                .orElseThrow(() -> new EntityNotFoundException("Diet program not found"));
+    public void editDietProgram(Long clientId, Long programId, DietProgramRequest request, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+
+
     }
 
-    private DietDay getDietDay(Long dietDayId) {
-        return  dietDayRepository.findById(dietDayId)
-                .orElseThrow(() -> new EntityNotFoundException("Diet day not found"));
+    public void deleteDietProgram(Long clientId, Long programId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+        Client client = entityUtils.getClient(clientId);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        dietProgramRepository.delete(entityUtils.getDietProgram(programId));
+        client.setDietProgram(null);
     }
 
-    private Long findCoachIdByClientId(Long clientId) {
-        return clientRepository.findCoachIdByClientId(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("This client has no coach yet"));
-    }
+    public void addDietDay(Long clientId, Long programId, @Valid DietDayRequest request, Authentication authentication) {
 
-    private Long findClientIdByDietProgramId(Long dietProgramId) {
-        return dietProgramRepository.findClientIdByDietProgramId(dietProgramId)
-                .orElseThrow(() -> new EntityNotFoundException("This diet program isn't associated with a client"));
-    }
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
-    private Long findProgramIdByDietDayId(Long dietDayId) {
-        return dietDayRepository.findDietProgramIdByDayId(dietDayId)
-                .orElseThrow(() -> new EntityNotFoundException("This diet day isn't associated with a dieting program"));
-    }
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
 
-    private Long findClientIdByDietDayId(Long dietDayId) {
-        return dietDayRepository.findClientIdByDayId(dietDayId)
-                .orElseThrow(() -> new EntityNotFoundException("This diet day isn't associated with a client"));
-    }
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
 
-    private Long findDayIdByMealId(Long mealId) {
-        return mealRepository.findDietDayIdFromMealId(mealId)
-                .orElseThrow(() -> new EntityNotFoundException("This meal isn't associated with a dieting day"));
-    }
+        DietProgram program = entityUtils.getDietProgram(programId);
 
-    private Long findProgramIdByMealId(Long mealId) {
-        return mealRepository.findDietProgramIdFromMealId(mealId)
-                .orElseThrow(() -> new EntityNotFoundException("This meal isn't associated with a dieting program"));
-    }
+        if (program.getDays().stream().peek(dietDay -> dietDay.getDayOfWeek()).equals(request.getDayOfWeek())) {
+            throw new IllegalStateException("This day already exists");
+        }
 
-    private Long findClientIdByMealId(Long mealId) {
-        return mealRepository.findClientIdByMealId(mealId)
-                .orElseThrow(() -> new EntityNotFoundException("This meal isn't associated with a client"));
+        DietDay day = dietDayMapper.toDietDay(request);
+        day.setCreatedAt(LocalDateTime.now());
+        program.getDays().add(day);
+        program.setUpdatedAt(LocalDateTime.now());
+        program.getDays().sort((d1,d2) -> d1.getDayOfWeek().compareTo(d2.getDayOfWeek()));
+        dietDayRepository.save(day);
+        mealRepository.saveAll(day.getMeals());
     }
 }

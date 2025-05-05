@@ -9,8 +9,6 @@ import lombok.Setter;
 @Builder
 public class ExerciseResponse {
 
-    private Long id;
-    private Long trainingDayId;
     private String title;
     private String exerciseUrl;
     private int exerciseNumber;

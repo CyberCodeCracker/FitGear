@@ -24,13 +24,11 @@ public class DietProgram {
 
     @Column(name = "TITLE")
     private String title;
-
     @Column(name = "DESCRIPTION")
     private String description;
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
-
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 

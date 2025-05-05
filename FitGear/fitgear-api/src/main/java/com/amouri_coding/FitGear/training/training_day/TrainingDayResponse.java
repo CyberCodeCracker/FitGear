@@ -13,8 +13,6 @@ import java.util.List;
 @Builder
 public class TrainingDayResponse {
 
-    private Long id;
-    private Long programId;
     private String title;
     private DayOfWeek dayOfWeek; // MONDAY, TUESDAY, ...
     private int estimatedBurnedCalories;

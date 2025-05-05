@@ -14,8 +14,5 @@ import java.util.List;
 @Builder
 public class TrainingProgramResponse {
 
-    private Long id;
-    private Long coachId;
-    private Long clientId;
     private List<TrainingDayResponse> trainingDays;
 }

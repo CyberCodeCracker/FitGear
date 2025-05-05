@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.diet.diet_program;
 
 import com.amouri_coding.FitGear.diet.diet_day.DietDay;
 import com.amouri_coding.FitGear.diet.diet_day.DietDayMapper;
+import com.amouri_coding.FitGear.diet.diet_day.DietDayResponse;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import jakarta.persistence.EntityManager;
@@ -41,5 +42,21 @@ public class DietProgramMapper {
 
         dietProgram.setDays(mappedDietDays);
         return dietProgram;
+    }
+
+    public DietProgramResponse toDietProgramResponse(DietProgram program) {
+
+        List<DietDayResponse> dayResponses = program.getDays()
+                .stream()
+                .map(dietDay -> dietDayMapper.toDietDayResponse(dietDay))
+                .collect(Collectors.toCollection(ArrayList::new))
+                ;
+
+        return DietProgramResponse.builder()
+                .title(program.getTitle())
+                .description(program.getDescription())
+                .days(dayResponses)
+                .build()
+                ;
     }
 }

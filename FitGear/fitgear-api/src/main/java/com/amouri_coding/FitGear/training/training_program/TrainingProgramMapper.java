@@ -52,9 +52,6 @@ public class TrainingProgramMapper {
                 ;
 
         return TrainingProgramResponse.builder()
-                .id(trainingProgram.getId())
-                .clientId(trainingProgram.getClient().getId())
-                .coachId(trainingProgram.getCoach().getId())
                 .trainingDays(mappedTrainingDays)
                 .build()
                 ;

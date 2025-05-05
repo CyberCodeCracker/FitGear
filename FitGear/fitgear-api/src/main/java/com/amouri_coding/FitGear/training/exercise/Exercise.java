@@ -21,19 +21,15 @@ public class Exercise {
 
     @Column(name = "TITLE")
     private String title;
-
-    @Column(name = "NUMBER")
-    private int number;
-
     @Column(name = "EXERCISE_URL")
     private String exerciseUrl;
 
+    @Column(name = "NUMBER")
+    private int number;
     @Column(name = "NUMBER_OF_SETS")
     private int numberOfSets;
-
     @Column(name = "NUMBER_OF_REPS")
     private int numberOfReps;
-
     @Column(name = "REST_TIME")
     private int restTime;
 
@@ -43,7 +39,6 @@ public class Exercise {
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
-
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 }

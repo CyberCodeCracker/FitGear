@@ -18,4 +18,16 @@ public class MealMapper {
                 ;
         return meal;
     }
+
+    public MealResponse toMealResponse(Meal meal) {
+        return MealResponse.builder()
+                .description(meal.getDescription())
+                .calories(meal.getCalories())
+                .carbs(meal.getCarbs())
+                .fats(meal.getFats())
+                .protein(meal.getProtein())
+                .timeToEat(meal.getTimeToEat())
+                .build()
+                ;
+    }
 }

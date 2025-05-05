@@ -26,8 +26,6 @@ public class ExerciseMapper {
 
     public ExerciseResponse toExerciseResponse(Exercise exercise) {
         return ExerciseResponse.builder()
-                .id(exercise.getId())
-                .trainingDayId(exercise.getTrainingDay().getId())
                 .title(exercise.getTitle())
                 .exerciseNumber(exercise.getNumber())
                 .exerciseUrl(exercise.getExerciseUrl())

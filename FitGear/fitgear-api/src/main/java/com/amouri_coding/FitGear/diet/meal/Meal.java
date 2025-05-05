@@ -28,16 +28,13 @@ public class Meal {
 
     @Column(name = "PROTEIN")
     private double protein;
-
     @Column(name = "CARBS")
     private double carbs;
-
     @Column(name = "FATS")
     private double fats;
 
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
-
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 

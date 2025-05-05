@@ -9,23 +9,18 @@ import lombok.Getter;
 @Builder
 public class ExerciseRequest {
 
-    @NotNull(message = "Training day id can't be null")
-    private Long trainingDayId;
+    private Long id;
 
     @NotBlank(message = "Title can't be blank")
     private String title;
-
-    @NotNull(message = "Exercise number can't be null")
-    private int exerciseNumber;
-
     private String exerciseUrl;
 
     @NotNull(message = "Rest Time can't be blank")
     private int restTime;
-
+    @NotNull(message = "Exercise number can't be null")
+    private int exerciseNumber;
     @NotNull(message = "Number of set can't be null")
     private int numberOfSets;
-
     @NotNull(message = "Number of reps can't be null")
     private int numberOfReps;
 }
