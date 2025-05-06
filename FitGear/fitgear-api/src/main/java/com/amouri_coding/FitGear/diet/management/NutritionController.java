@@ -147,6 +147,6 @@ public class NutritionController {
             @PathVariable(value = "meal-id") Long mealId,
             Authentication authentication
     ) {
-        service.deleteMeal(clientId, programId, dayId, mealId, authentication)
+        service.deleteMeal(clientId, programId, dayId, mealId, authentication);
     }
 }
