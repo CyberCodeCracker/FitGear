@@ -178,6 +178,10 @@ public class NutritionService {
             throw new AccessDeniedException("This client isn't yours");
         }
 
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
         if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
             throw new IllegalStateException("This program doesn't belong to this client");
         }
@@ -196,6 +200,10 @@ public class NutritionService {
 
         if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
             throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
         }
 
         if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
@@ -223,5 +231,31 @@ public class NutritionService {
 
         DietProgram program = entityUtils.getDietProgram(programId);
         program.setUpdatedAt(LocalDateTime.now());
+    }
+
+    public void deleteDietDay(Long clientId, Long programId, Long dayId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        DietProgram program = entityUtils.getDietProgram(programId);
+        dietDayRepository.deleteById(dayId);
+        program.setUpdatedAt(LocalDateTime.now());
+
     }
 }

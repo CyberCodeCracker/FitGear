@@ -87,4 +87,14 @@ public class NutritionController {
         service.editDietDay(clientId, programId, dayId, request, authentication);
     }
 
+    @DeleteMapping("/{program-id}/days/{day-id}/delete")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    public void deleteDietDay(
+            @PathVariable final Long clientId,
+            @PathVariable(value = "program-id") Long programId,
+            @PathVariable(value = "day-id") Long dayId,
+            Authentication authentication
+    ) {
+        service.deleteDietDay(clientId, programId, dayId, authentication);
+    }
 }
