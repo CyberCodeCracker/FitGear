@@ -350,4 +350,37 @@ public class NutritionService {
         dietDay.setUpdatedAt(LocalDateTime.now());
         mealRepository.save(newMeal);
     }
+
+    public void deleteMeal(Long clientId, Long programId, Long dayId, Long mealId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        if (!entityUtils.findProgramIdByMealId(mealId).equals(programId)) {
+            throw new IllegalStateException("This meal doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByMealId(mealId).equals(clientId)) {
+            throw new IllegalStateException("This meal doesn't belong to this client");
+        }
+
+        mealRepository.deleteById(mealId);
+        DietDay dietDay = entityUtils.getDietDay(dayId);
+        dietDay.setUpdatedAt(LocalDateTime.now());
+    }
 }
