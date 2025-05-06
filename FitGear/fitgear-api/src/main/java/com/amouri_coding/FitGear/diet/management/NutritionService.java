@@ -5,9 +5,7 @@ import com.amouri_coding.FitGear.common.EntityUtils;
 import com.amouri_coding.FitGear.common.SecurityUtils;
 import com.amouri_coding.FitGear.diet.diet_day.*;
 import com.amouri_coding.FitGear.diet.diet_program.*;
-import com.amouri_coding.FitGear.diet.meal.Meal;
-import com.amouri_coding.FitGear.diet.meal.MealMapper;
-import com.amouri_coding.FitGear.diet.meal.MealRepository;
+import com.amouri_coding.FitGear.diet.meal.*;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
@@ -20,8 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -100,22 +100,6 @@ public class NutritionService {
         DietProgram program = entityUtils.getDietProgram(programId);
         DietProgramResponse programResponse = programMapper.toDietProgramResponse(program);
         return programResponse;
-    }
-
-    public void editDietProgram(Long clientId, Long programId, DietProgramRequest request, Authentication authentication) {
-
-        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
-
-        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
-            throw new AccessDeniedException("This client isn't yours");
-        }
-
-        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
-            throw new IllegalStateException("This program doesn't belong to this client");
-        }
-
-
-
     }
 
     public void deleteDietProgram(Long clientId, Long programId, Authentication authentication) {
@@ -257,5 +241,113 @@ public class NutritionService {
         dietDayRepository.deleteById(dayId);
         program.setUpdatedAt(LocalDateTime.now());
 
+    }
+
+    public void addMeal(Long clientId, Long programId, Long dayId, MealRequest request, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        Meal meal = mealMapper.toMeal(request);
+        meal.setCreatedAt(LocalDateTime.now());
+
+        DietDay dietDay = entityUtils.getDietDay(dayId);
+        dietDay.getMeals().add(meal);
+        dietDay.getMeals()
+                .sort(Comparator.comparing(Meal::getTimeToEat));
+        dietDay.setUpdatedAt(LocalDateTime.now());
+
+        mealRepository.save(meal);
+
+    }
+
+    public MealResponse getMeal(Long clientId, Long programId, Long dayId, Long mealId, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        if (!entityUtils.findProgramIdByMealId(mealId).equals(programId)) {
+            throw new IllegalStateException("This meal doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByMealId(mealId).equals(clientId)) {
+            throw new IllegalStateException("This meal doesn't belong to this client");
+        }
+
+        Meal meal = entityUtils.getMeal(mealId);
+        return mealMapper.toMealResponse(meal);
+
+    }
+
+
+    public void editMeal(Long clientId, Long programId, Long dayId, Long mealId, MealRequest request, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findProgramIdByDietDayId(dayId).equals(programId)) {
+            throw new IllegalStateException("This day doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        if (!entityUtils.findProgramIdByMealId(mealId).equals(programId)) {
+            throw new IllegalStateException("This meal doesn't belong to this program");
+        }
+
+        if (!entityUtils.findClientIdByMealId(mealId).equals(clientId)) {
+            throw new IllegalStateException("This meal doesn't belong to this client");
+        }
+
+        Meal oldMeal = entityUtils.getMeal(mealId);
+        Meal newMeal = mealMapper.toMeal(request);
+
+        newMeal.setId(oldMeal.getId());
+        newMeal.setDay(oldMeal.getDay());
+        newMeal.setCreatedAt(oldMeal.getCreatedAt());
+        newMeal.setUpdatedAt(LocalDateTime.now());
+
+        DietDay dietDay = entityUtils.getDietDay(dayId);
+        dietDay.setUpdatedAt(LocalDateTime.now());
+        mealRepository.save(newMeal);
     }
 }

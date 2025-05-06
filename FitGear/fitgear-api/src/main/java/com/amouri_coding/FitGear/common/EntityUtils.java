@@ -4,6 +4,7 @@ import com.amouri_coding.FitGear.diet.diet_day.DietDay;
 import com.amouri_coding.FitGear.diet.diet_day.DietDayRepository;
 import com.amouri_coding.FitGear.diet.diet_program.DietProgram;
 import com.amouri_coding.FitGear.diet.diet_program.DietProgramRepository;
+import com.amouri_coding.FitGear.diet.meal.Meal;
 import com.amouri_coding.FitGear.diet.meal.MealRepository;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
@@ -31,8 +32,13 @@ public class EntityUtils {
     }
 
     public DietDay getDietDay(Long dietDayId) {
-        return  dietDayRepository.findById(dietDayId)
+        return dietDayRepository.findById(dietDayId)
                 .orElseThrow(() -> new EntityNotFoundException("Diet day not found"));
+    }
+
+    public Meal getMeal(Long mealId) {
+        return mealRepository.findById(mealId)
+                .orElseThrow(() -> new EntityNotFoundException("Meal not found"));
     }
 
     public Long findCoachIdByClientId(Long clientId) {
