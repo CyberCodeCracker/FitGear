@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -191,5 +188,40 @@ public class NutritionService {
 
         DietDay day = entityUtils.getDietDay(dayId);
         return dietDayMapper.toDietDayResponse(day);
+    }
+
+    public void editDietDay(Long clientId, Long programId, Long dayId, DietDayRequest request, Authentication authentication) {
+
+        Coach coach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
+
+        if (!entityUtils.findCoachIdByClientId(clientId).equals(coach.getId())) {
+            throw new AccessDeniedException("This client isn't yours");
+        }
+
+        if (!entityUtils.findClientIdByDietProgramId(programId).equals(clientId)) {
+            throw new IllegalStateException("This program doesn't belong to this client");
+        }
+
+        if (!entityUtils.findClientIdByDietDayId(dayId).equals(clientId)) {
+            throw new IllegalStateException("This day doesn't belong to this client");
+        }
+
+        DietDay oldDay = entityUtils.getDietDay(dayId);
+        DietDay newDay = dietDayMapper.toDietDay(request);
+        newDay.setId(oldDay.getId());
+        newDay.setProgram(oldDay.getProgram());
+        newDay.setDayOfWeek(oldDay.getDayOfWeek());
+        newDay.setUpdatedAt(LocalDateTime.now());
+
+        newDay.getMeals().forEach(meal -> {
+            meal.setDay(newDay);
+            meal.setCreatedAt(LocalDateTime.now());
+            meal.setUpdatedAt(LocalDateTime.now());
+        })
+        ;
+        dietDayRepository.save(newDay);
+
+        DietProgram program = entityUtils.getDietProgram(programId);
+        program.setUpdatedAt(LocalDateTime.now());
     }
 }

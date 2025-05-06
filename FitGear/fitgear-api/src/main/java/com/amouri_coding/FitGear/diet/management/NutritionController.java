@@ -74,4 +74,17 @@ public class NutritionController {
     ) {
         return ResponseEntity.ok(service.getDietDay(clientId, programId, dayId, authentication));
     }
+
+    @PatchMapping("/{program-id}/days/{day-id}/edit")
+    @PreAuthorize("hasRole('ROLE_COACH')")
+    public void editDietDay(
+            @PathVariable final Long clientId,
+            @PathVariable(value = "program-id") Long programId,
+            @PathVariable(value = "day-id") Long dayId,
+            @RequestBody @Valid DietDayRequest request,
+            Authentication authentication
+    ) {
+        service.editDietDay(clientId, programId, dayId, request, authentication);
+    }
+
 }
