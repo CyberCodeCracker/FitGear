@@ -39,7 +39,7 @@ The application is built with a robust Spring Boot backend and a modern Angular 
 * History logs to help coaches adjust programs based on progression.
 
 🛠️ Tech Stack
-## Backend
+# Backend
 
 * Spring Boot
 
@@ -53,7 +53,7 @@ The application is built with a robust Spring Boot backend and a modern Angular 
 
 * RESTful API Architecture
 
-## Frontend
+# Frontend
 
 * Angular
 
