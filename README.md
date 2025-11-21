@@ -3,8 +3,8 @@ FitGear
 FitGear is an interactive online-coaching platform that empowers fitness coaches to manage their clients, create personalized training programs, build nutrition plans, and track progress in real time.
 The application is built with a robust Spring Boot backend and a modern Angular frontend.
 
-🚀 Key Features
-👤 Coach Dashboard
+## 🚀 Key Features
+## 👤 Coach Dashboard
 
 * Full client management (add, update, delete).
 
@@ -16,7 +16,7 @@ The application is built with a robust Spring Boot backend and a modern Angular 
 
 * Secure chat system to communicate directly with clients.
 
-🏋️‍♂️ Client Dashboard
+## 🏋️‍♂️ Client Dashboard
 
 * Access to their assigned coach and updated weekly programs.
 
@@ -24,21 +24,14 @@ The application is built with a robust Spring Boot backend and a modern Angular 
 
 * Enter biometric data (weight, height, body fat %, experience level).
 
-* Secure chat with their coach for questions and guidance.
 
-💬 Real-Time Messaging
-
-* Instant coach ↔ client messaging.
-
-* Securely stored message history.
-
-📊 Progress Tracking
+## 📊 Progress Tracking
 
 * Regular updates of client physical data.
 
 * History logs to help coaches adjust programs based on progression.
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 # Backend
 
 * Spring Boot
@@ -63,10 +56,10 @@ The application is built with a robust Spring Boot backend and a modern Angular 
 
 *  Angular Services & Guards
 
-📐 System Architecture
+## 📐 System Architecture
 
-REST architecture between Angular and the Spring Boot API.
+* REST architecture between Angular and the Spring Boot API.
 
-JWT-based authentication for login and authorization.
+* JWT-based authentication for login and authorization.
 
-PostgreSQL database for users, messages, programs, and biometric data
+* PostgreSQL database for users, messages, programs, and biometric data
