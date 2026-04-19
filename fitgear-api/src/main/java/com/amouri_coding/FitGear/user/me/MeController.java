@@ -42,6 +42,18 @@ public class MeController {
                         .profilePicture(coach.getProfilePicture())
                         .build();
             }
+            return ResponseEntity.ok(MeResponse.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .roles(roles)
+                    .userType(userType)
+                    .coach(coachSummary)
+                    .height(client.getHeight())
+                    .weight(client.getWeight())
+                    .bodyFatPercentage(client.getBodyFatPercentage())
+                    .build());
         } else if (user instanceof Coach) {
             userType = "COACH";
         }

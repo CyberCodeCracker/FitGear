@@ -18,7 +18,10 @@ public class MeResponse {
     private List<String> roles;
     private String userType; // CLIENT | COACH
 
-    // Client-only
+    // Client-only fields
     private CoachSummaryResponse coach;
+    private Double height;
+    private Double weight;
+    private Double bodyFatPercentage;
 }
 

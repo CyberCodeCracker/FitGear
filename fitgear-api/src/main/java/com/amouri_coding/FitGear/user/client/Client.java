@@ -34,7 +34,7 @@ public class Client extends User {
     private double bodyFatPercentage;
 
     @ManyToOne
-    @JoinColumn(name = "coach_id")
+    @JoinColumn(name = "coach_id", nullable = true)
     private Coach coach;
 
     @OneToOne

@@ -5,7 +5,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormArray, FormGroup } fr
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { MockDataService } from '../../../core/services/mock-data.service';
-import { ClientResponse } from '../../../core/models/models';
+import { ClientResponse, TrainingDay, DietDay, Exercise, Meal } from '../../../core/models/models';
 
 type Tab = 'overview' | 'training' | 'diet';
 
@@ -267,10 +267,10 @@ export class ClientDetailComponent implements OnInit {
   buildForms(): void {
     // Training form pre-filled
     this.trainingForm = this.fb.group({
-      days: this.fb.array(this.data.trainingProgram.trainingDays.map(d => this.fb.group({
+      days: this.fb.array(this.data.trainingProgram.trainingDays.map((d: TrainingDay) => this.fb.group({
         dayOfWeek: [d.dayOfWeek],
         focus:     [d.focus],
-        exercises: this.fb.array(d.exercises.map(e => this.fb.group({
+        exercises: this.fb.array(d.exercises.map((e: Exercise) => this.fb.group({
           name: [e.name], sets: [e.sets], reps: [e.reps], weight: [e.weight ?? ''],
         }))),
       }))),
@@ -279,9 +279,9 @@ export class ClientDetailComponent implements OnInit {
     this.dietForm = this.fb.group({
       title:       [this.data.dietProgram.title],
       description: [this.data.dietProgram.description],
-      days: this.fb.array(this.data.dietProgram.days.map(d => this.fb.group({
+      days: this.fb.array(this.data.dietProgram.days.map((d: DietDay) => this.fb.group({
         dayLabel: [d.dayLabel],
-        meals: this.fb.array(d.meals.map(m => this.fb.group({
+        meals: this.fb.array(d.meals.map((m: Meal) => this.fb.group({
           name: [m.name], calories: [m.calories], protein: [m.protein], carbs: [m.carbs], fat: [m.fat],
         }))),
       }))),

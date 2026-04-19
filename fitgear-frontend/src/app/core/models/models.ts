@@ -1,13 +1,7 @@
 // ─── Auth ──────────────────────────────────────────────────────────
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
+export interface LoginRequest { email: string; password: string; }
 
-export interface AuthResponse {
-  token: string;
-  refreshToken?: string;
-}
+export interface AuthResponse { token: string; refreshToken?: string; }
 
 export interface MeResponse {
   id: number;
@@ -17,7 +11,11 @@ export interface MeResponse {
   roles: string[];
   userType: 'CLIENT' | 'COACH' | 'UNKNOWN';
   coach?: CoachSummary | null;
-}  
+  // Client-only fields
+  height?: number;
+  weight?: number;
+  bodyFatPercentage?: number;
+}
 
 export interface CoachSummary {
   id: number;
@@ -25,6 +23,20 @@ export interface CoachSummary {
   monthlyRate: number;
   rating: number;
   profilePicture?: string;
+}
+
+// ─── Registration ──────────────────────────────────────────────────
+export interface CoachRegistrationRequest {
+  firstName: string; lastName: string; email: string;
+  password: string; passwordConfirm: string;
+  phoneNumber: string; description: string;
+  yearsOfExperience: number; monthlyRate: number;
+}
+
+export interface ClientRegistrationRequest {
+  firstName: string; lastName: string; email: string;
+  password: string; passwordConfirm: string;
+  height: number; weight: number; bodyFatPercentage: number;
 }
 
 // ─── Coach Discovery ───────────────────────────────────────────────
@@ -38,26 +50,64 @@ export interface CoachCard {
   profilePicture?: string;
 }
 
-export interface CoachDetail extends CoachCard {
-  specialties?: string[];
-}
-
-// ─── Client ────────────────────────────────────────────────────────
-export interface ClientResponse {
-  id: number;
-  firstName: string;
-  lastName: string;
-  height: number;
-  weight: number;
-  bodyFatPercentage: number;
-}
-
+// ─── Subscription ──────────────────────────────────────────────────
 export interface ClientCoachResponse {
-  coachId: number;
-  coachName: string;
+  id: number;
+  fullName: string;
+  description: string;
+  monthlyRate: number;
+  rating: number;
+  profilePicture?: string;
 }
 
-// ─── Progress ──────────────────────────────────────────────────────
+// ─── Training (API response shapes) ───────────────────────────────
+export interface ExerciseResponse {
+  id: number;
+  title: string;
+  exerciseUrl?: string;
+  exerciseNumber: number;
+  restTime: number;        // seconds
+  numberOfSets: number;
+  numberOfReps: number;
+}
+
+export interface TrainingDayResponse {
+  title: string;
+  dayOfWeek: string;       // MONDAY … SUNDAY
+  estimatedBurnedCalories: number;
+  exercises: ExerciseResponse[];
+}
+
+export interface TrainingProgramResponse {
+  trainingDays: TrainingDayResponse[];
+}
+
+// ─── Nutrition (API response shapes) ──────────────────────────────
+export interface MealResponse {
+  description: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  timeToEat?: string;      // "HH:mm:ss"
+}
+
+export interface DietDayResponse {
+  dayOfWeek: string;
+  totalCaloriesInDay: number;
+  totalProteinInDay: number;
+  totalCarbsInDay: number;
+  totalFatsInDay: number;
+  meals: MealResponse[];
+}
+
+export interface DietProgramResponse {
+  title: string;
+  description: string;
+  days: DietDayResponse[];
+}
+
+// ─── Progress (local) ──────────────────────────────────────────────
 export interface ProgressEntry {
   id: number;
   date: string;
@@ -67,7 +117,28 @@ export interface ProgressEntry {
   notes?: string;
 }
 
-// ─── Training ──────────────────────────────────────────────────────
+// ─── Pagination ────────────────────────────────────────────────────
+export interface PageResponse<T> {
+  content: T[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+// ─── Coach-side client view ────────────────────────────────────────
+export interface ClientResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  height: number;
+  weight: number;
+  bodyFatPercentage: number;
+}
+
+// ─── Coach-side program editing (local form models) ────────────────
 export interface Exercise {
   id?: number;
   name: string;
@@ -89,7 +160,6 @@ export interface TrainingProgram {
   trainingDays: TrainingDay[];
 }
 
-// ─── Diet ──────────────────────────────────────────────────────────
 export interface Meal {
   id?: number;
   name: string;
@@ -112,13 +182,4 @@ export interface DietProgram {
   title: string;
   description: string;
   days: DietDay[];
-}
-
-// ─── Pagination ────────────────────────────────────────────────────
-export interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
 }

@@ -51,19 +51,6 @@ import { AuthService } from '../../../core/services/auth.service';
           <h1 class="text-3xl font-bold text-white mb-2">Welcome back</h1>
           <p class="text-muted mb-8">Sign in to continue to your dashboard.</p>
 
-          <!-- Demo hint -->
-          <div class="card bg-info/10 border-info/20 mb-6 text-sm text-blue-300">
-            <div class="flex items-start gap-2">
-              <i class="fa-solid fa-circle-info mt-0.5 text-info"></i>
-              <div>
-                <p class="font-medium text-white mb-1">Demo credentials</p>
-                <p>Coach: <code class="text-accent">coach&#64;fitgear.com</code></p>
-                <p>Client: <code class="text-accent">client&#64;fitgear.com</code></p>
-                <p class="mt-1">Password: <code class="text-accent">password</code></p>
-              </div>
-            </div>
-          </div>
-
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
             <div class="form-group">
               <label class="form-label">Email address</label>
@@ -104,7 +91,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <p class="text-center text-muted mt-6">
             Don't have an account?
-            <a routerLink="/auth/verify" class="text-accent hover:underline ml-1">Verify email</a>
+            <a routerLink="/auth/register" class="text-accent hover:underline ml-1">Create one</a>
           </p>
         </div>
       </div>
@@ -112,8 +99,8 @@ import { AuthService } from '../../../core/services/auth.service';
   `
 })
 export class LoginComponent {
-  private fb   = inject(FormBuilder);
-  private auth = inject(AuthService);
+  private fb     = inject(FormBuilder);
+  private auth   = inject(AuthService);
   private router = inject(Router);
 
   form = this.fb.group({
@@ -136,12 +123,20 @@ export class LoginComponent {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
     this.error   = '';
-    setTimeout(() => {
-      const ok = this.auth.login(this.f['email'].value!, this.f['password'].value!);
-      this.loading = false;
-      if (!ok) { this.error = 'Invalid email or password.'; return; }
-      const dest = this.auth.isCoach() ? '/coach/dashboard' : '/client/dashboard';
-      this.router.navigate([dest]);
-    }, 600);
+    this.auth.login(this.f['email'].value!, this.f['password'].value!).subscribe({
+      next: me => {
+        this.loading = false;
+        if (me.userType === 'COACH') {
+          this.router.navigate(['/coach/dashboard']);
+        } else {
+          // Clients without a coach go to discovery; the guard handles the rest
+          this.router.navigate([me.coach ? '/client/dashboard' : '/client/coaches']);
+        }
+      },
+      error: () => {
+        this.loading = false;
+        this.error = 'Invalid email or password.';
+      }
+    });
   }
 }

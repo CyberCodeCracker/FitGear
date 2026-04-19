@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
+const API = 'http://localhost:8080/api/v1';
 
 @Component({
   selector: 'app-verify-email',
@@ -11,7 +14,6 @@ import { Router, RouterModule } from '@angular/router';
     <div class="min-h-screen bg-bg flex items-center justify-center px-6 py-12">
       <div class="w-full max-w-md animate-slide-up">
 
-        <!-- Logo -->
         <div class="flex items-center gap-2 mb-10">
           <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
             <i class="fa-solid fa-dumbbell text-black text-xs"></i>
@@ -19,22 +21,24 @@ import { Router, RouterModule } from '@angular/router';
           <span class="font-bold text-lg text-white">FitGear</span>
         </div>
 
-        <!-- Icon -->
         <div class="w-16 h-16 rounded-2xl bg-accent/15 flex items-center justify-center mb-6">
           <i class="fa-solid fa-envelope-circle-check text-accent text-3xl"></i>
         </div>
 
         <h1 class="text-3xl font-bold text-white mb-2">Verify your email</h1>
-        <p class="text-muted mb-8">We sent a verification token to your email address. Paste it below to activate your account.</p>
+        <p class="text-muted mb-8">
+          Enter the 6-digit code we sent to your email address to activate your account.
+        </p>
 
         <ng-container *ngIf="!success; else successBlock">
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
             <div class="form-group">
-              <label class="form-label">Verification Token</label>
-              <input formControlName="token" type="text" class="form-input font-mono tracking-widest text-center text-lg"
-                     placeholder="XXXXXXXX-XXXX-XXXX"
+              <label class="form-label">Verification Code</label>
+              <input formControlName="token" type="text" maxlength="6"
+                     class="form-input font-mono tracking-[0.4em] text-center text-xl"
+                     placeholder="000000"
                      [class.error]="f['token'].invalid && f['token'].touched">
-              <p *ngIf="f['token'].invalid && f['token'].touched" class="form-error">Token is required.</p>
+              <p *ngIf="f['token'].invalid && f['token'].touched" class="form-error">Enter the 6-digit code.</p>
             </div>
 
             <p *ngIf="error" class="text-danger text-sm bg-danger/10 rounded-lg px-3 py-2 text-center">
@@ -70,10 +74,12 @@ import { Router, RouterModule } from '@angular/router';
   `
 })
 export class VerifyEmailComponent {
-  private fb     = inject(FormBuilder);
-  private router = inject(Router);
+  private fb   = inject(FormBuilder);
+  private http = inject(HttpClient);
 
-  form = this.fb.group({ token: ['', Validators.required] });
+  form = this.fb.group({
+    token: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
 
   error   = '';
   loading = false;
@@ -85,10 +91,15 @@ export class VerifyEmailComponent {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
     this.error   = '';
-    setTimeout(() => {
-      this.loading = false;
-      // Mock: any non-empty token succeeds
-      this.success = true;
-    }, 800);
+    this.http.get(`${API}/auth/confirm-account`, {
+      params: { token: this.f['token'].value! },
+      responseType: 'text'
+    }).subscribe({
+      next: () => { this.loading = false; this.success = true; },
+      error: (err) => {
+        this.loading = false;
+        this.error = err?.error ?? 'Invalid or expired code. Please try again.';
+      }
+    });
   }
 }
