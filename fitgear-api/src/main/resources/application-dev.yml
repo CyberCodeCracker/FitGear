@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/fit_gear
+    username: post
+    password: post
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  application:
+    security:
+      jwt:
+        access-expiration: 900000
+        refresh-expiration: 604800000
+        invitation-expiration: 86400000
+      url:
+        base-url: "http://localhost:8080/api/v1"
+    mail:
+      from-email: souhailamouri123@gmail.com
+      frontend:
+        activation-url: http://localhost:4200/activate-account
+
+  logging:
+    level:
+      org.springframework: INFO
+      org.springframework.security: DEBUG
+      com.amouri_coding.FitGear: DEBUG
+
+  mail:
+    host: localhost
+    port: 1025
+    username: souhail
+    password: amouri
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enable: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
