@@ -1,8 +1,6 @@
 package com.amouri_coding.FitGear.training.training_program;
 
 import com.amouri_coding.FitGear.training.training_day.TrainingDayResponse;
-import com.amouri_coding.FitGear.user.client.Client;
-import com.amouri_coding.FitGear.user.coach.Coach;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,5 +12,6 @@ import java.util.List;
 @Builder
 public class TrainingProgramResponse {
 
+    private Long id;
     private List<TrainingDayResponse> trainingDays;
 }

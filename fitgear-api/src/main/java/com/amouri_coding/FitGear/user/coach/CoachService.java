@@ -76,7 +76,7 @@ public class CoachService {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
-        if (!client.getCoach().equals(connectedCoach)) {
+        if (client.getCoach() == null || !client.getCoach().getId().equals(connectedCoach.getId())) {
             throw new IllegalStateException("This isn't your client");
         }
 

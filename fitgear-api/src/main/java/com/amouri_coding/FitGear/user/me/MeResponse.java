@@ -23,5 +23,9 @@ public class MeResponse {
     private Double height;
     private Double weight;
     private Double bodyFatPercentage;
+
+    // Coach-only fields
+    private Double rating;
+    private Double monthlyRate;
 }
 

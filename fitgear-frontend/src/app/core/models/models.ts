@@ -15,6 +15,9 @@ export interface MeResponse {
   height?: number;
   weight?: number;
   bodyFatPercentage?: number;
+  // Coach-only fields
+  rating?: number;
+  monthlyRate?: number;
 }
 
 export interface CoachSummary {

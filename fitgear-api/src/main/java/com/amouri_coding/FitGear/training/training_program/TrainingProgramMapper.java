@@ -52,6 +52,7 @@ public class TrainingProgramMapper {
                 ;
 
         return TrainingProgramResponse.builder()
+                .id(trainingProgram.getId())
                 .trainingDays(mappedTrainingDays)
                 .build()
                 ;

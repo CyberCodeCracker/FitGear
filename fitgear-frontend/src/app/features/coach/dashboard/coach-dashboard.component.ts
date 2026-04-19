@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { AuthService } from '../../../core/services/auth.service';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { CoachApiService } from '../../../core/services/coach-api.service';
+import { ClientResponse } from '../../../core/models/models';
 
 @Component({
   selector: 'app-coach-dashboard',
@@ -14,8 +15,8 @@ import { MockDataService } from '../../../core/services/mock-data.service';
   template: `
     <div class="flex min-h-screen bg-bg">
       <app-sidebar></app-sidebar>
-
       <div class="flex-1 flex flex-col min-w-0">
+
         <app-navbar title="Coach Dashboard">
           <a routerLink="/coach/clients" class="btn-primary btn-sm">
             <i class="fa-solid fa-users"></i> My Clients
@@ -29,22 +30,26 @@ import { MockDataService } from '../../../core/services/mock-data.service';
             <div class="absolute right-4 top-1/2 -translate-y-1/2 text-8xl opacity-10 select-none">🏋️</div>
             <p class="text-gray-400 text-sm mb-1">Welcome back, Coach 👋</p>
             <h2 class="text-2xl font-bold text-white">{{ auth.user()?.firstName }} {{ auth.user()?.lastName }}</h2>
-            <p class="text-muted mt-1">You have <span class="text-accent font-semibold">{{ data.clients.length }} active clients</span> this month.</p>
+            <p class="text-muted mt-1">
+              You have
+              <span class="text-accent font-semibold">{{ totalClients() }} active client{{ totalClients() !== 1 ? 's' : '' }}</span>
+              this month.
+            </p>
           </div>
 
           <!-- Stats -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <app-stat-card label="Total Clients" [value]="data.clients.length" icon="fa-users"
-              iconColor="#22C55E" iconBg="rgba(34,197,94,0.15)" [change]="2" changeUnit=""></app-stat-card>
-            <app-stat-card label="Avg. Rating" value="4.8" unit="/5" icon="fa-star"
-              iconColor="#F59E0B" iconBg="rgba(245,158,11,0.15)" [change]="0.1" changeUnit=""></app-stat-card>
-            <app-stat-card label="Programs Active" value="5" icon="fa-dumbbell"
-              iconColor="#3B82F6" iconBg="rgba(59,130,246,0.15)"></app-stat-card>
-            <app-stat-card label="Monthly Revenue" value="$875" icon="fa-dollar-sign"
-              iconColor="#A855F7" iconBg="rgba(168,85,247,0.15)" [change]="125" changeUnit="$"></app-stat-card>
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <app-stat-card label="Total Clients" [value]="totalClients()" icon="fa-users"
+              iconColor="#22C55E" iconBg="rgba(34,197,94,0.15)"></app-stat-card>
+            <app-stat-card label="Avg. Rating" [value]="auth.user()?.rating ?? 0" unit="/5" icon="fa-star"
+              iconColor="#F59E0B" iconBg="rgba(245,158,11,0.15)"></app-stat-card>
+            <app-stat-card label="Monthly Revenue"
+              [value]="'$' + ((auth.user()?.monthlyRate ?? 0) * totalClients())"
+              icon="fa-dollar-sign"
+              iconColor="#A855F7" iconBg="rgba(168,85,247,0.15)"></app-stat-card>
           </div>
 
-          <!-- Clients overview -->
+          <!-- Client overview table -->
           <div class="card space-y-4">
             <div class="flex items-center justify-between">
               <h3 class="section-title flex items-center gap-2">
@@ -52,13 +57,19 @@ import { MockDataService } from '../../../core/services/mock-data.service';
               </h3>
               <a routerLink="/coach/clients" class="btn-ghost btn-sm">View all</a>
             </div>
-            <div class="table-wrapper">
+
+            <!-- Skeleton -->
+            <div *ngIf="loading()" class="space-y-2">
+              <div *ngFor="let s of [1,2,3,4,5]" class="h-14 bg-card-2 rounded-lg animate-pulse"></div>
+            </div>
+
+            <div *ngIf="!loading()" class="table-wrapper">
               <table class="data-table">
                 <thead><tr>
-                  <th>Client</th><th>Height (cm)</th><th>Weight (kg)</th><th>Body Fat (%)</th><th>Action</th>
+                  <th>Client</th><th>Weight (kg)</th><th>Body Fat (%)</th><th>Action</th>
                 </tr></thead>
                 <tbody>
-                  <tr *ngFor="let c of data.clients.slice(0, 5)">
+                  <tr *ngFor="let c of recentClients()">
                     <td>
                       <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold flex-shrink-0">
@@ -67,10 +78,12 @@ import { MockDataService } from '../../../core/services/mock-data.service';
                         <span class="font-medium text-white">{{ c.firstName }} {{ c.lastName }}</span>
                       </div>
                     </td>
-                    <td>{{ c.height }}</td>
                     <td>{{ c.weight }}</td>
                     <td>
-                      <span class="badge" [class.badge-green]="c.bodyFatPercentage < 18" [class.badge-yellow]="c.bodyFatPercentage >= 18 && c.bodyFatPercentage < 25" [class.badge-red]="c.bodyFatPercentage >= 25">
+                      <span class="badge"
+                            [class.badge-green]="c.bodyFatPercentage < 18"
+                            [class.badge-yellow]="c.bodyFatPercentage >= 18 && c.bodyFatPercentage < 25"
+                            [class.badge-red]="c.bodyFatPercentage >= 25">
                         {{ c.bodyFatPercentage }}%
                       </span>
                     </td>
@@ -82,59 +95,33 @@ import { MockDataService } from '../../../core/services/mock-data.service';
                   </tr>
                 </tbody>
               </table>
+              <p *ngIf="recentClients().length === 0" class="text-center text-muted py-8">
+                <i class="fa-solid fa-users text-2xl block mb-2"></i>No clients yet.
+              </p>
             </div>
           </div>
 
-          <!-- Activity feed -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card space-y-3">
-              <h3 class="section-title flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-warning"></i> Recent Activity
-              </h3>
-              <div *ngFor="let a of activity" class="flex items-start gap-3 py-2.5 border-b border-white/5 last:border-0">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                     [style.background]="a.bg">
-                  <i class="fa-solid text-xs" [class]="a.icon" [style.color]="a.color"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm text-gray-300">{{ a.text }}</p>
-                  <p class="text-xs text-gray-600 mt-0.5">{{ a.time }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="card space-y-3">
-              <h3 class="section-title flex items-center gap-2">
-                <i class="fa-solid fa-calendar-check text-info"></i> This Week's Focus
-              </h3>
-              <div *ngFor="let t of tasks" class="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
-                <i class="fa-solid flex-shrink-0 w-5 text-center" [class]="t.done ? 'fa-circle-check text-accent' : 'fa-circle text-gray-600'"></i>
-                <span class="text-sm flex-1" [class.line-through]="t.done" [class.text-gray-500]="t.done" [class.text-gray-300]="!t.done">{{ t.text }}</span>
-                <span class="badge" [class.badge-green]="t.done" [class.badge-yellow]="!t.done">{{ t.done ? 'Done' : 'Todo' }}</span>
-              </div>
-            </div>
-          </div>
         </main>
       </div>
     </div>
   `
 })
-export class CoachDashboardComponent {
+export class CoachDashboardComponent implements OnInit {
   auth = inject(AuthService);
-  data = inject(MockDataService);
+  private api = inject(CoachApiService);
 
-  activity = [
-    { text: 'Jordan Smith logged new progress entry', time: '2 hours ago', icon: 'fa-arrow-trend-up', color: '#22C55E', bg: 'rgba(34,197,94,0.15)' },
-    { text: "Taylor Brown completed today's workout", time: '4 hours ago', icon: 'fa-dumbbell', color: '#3B82F6', bg: 'rgba(59,130,246,0.15)' },
-    { text: 'Morgan Davis sent you a message', time: '6 hours ago', icon: 'fa-comment', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)' },
-    { text: "Casey Wilson missed yesterday's training", time: '1 day ago', icon: 'fa-triangle-exclamation', color: '#EF4444', bg: 'rgba(239,68,68,0.15)' },
-  ];
+  loading       = signal(true);
+  recentClients = signal<ClientResponse[]>([]);
+  totalClients  = signal(0);
 
-  tasks = [
-    { text: 'Update Jordan\'s training program', done: true },
-    { text: 'Review Taylor\'s diet plan', done: true },
-    { text: 'Create program for new client Riley', done: false },
-    { text: 'Reply to Morgan\'s message', done: false },
-    { text: 'Schedule monthly check-ins', done: false },
-  ];
+  ngOnInit(): void {
+    this.api.getClients(0, 5).subscribe({
+      next: res => {
+        this.recentClients.set(res.content);
+        this.totalClients.set(res.totalElements);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+  }
 }

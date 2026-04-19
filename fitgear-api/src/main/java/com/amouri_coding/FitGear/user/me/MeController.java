@@ -54,8 +54,18 @@ public class MeController {
                     .weight(client.getWeight())
                     .bodyFatPercentage(client.getBodyFatPercentage())
                     .build());
-        } else if (user instanceof Coach) {
+        } else if (user instanceof Coach coach) {
             userType = "COACH";
+            return ResponseEntity.ok(MeResponse.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .roles(roles)
+                    .userType(userType)
+                    .rating(coach.getRating())
+                    .monthlyRate(coach.getMonthlyRate())
+                    .build());
         }
 
         return ResponseEntity.ok(MeResponse.builder()

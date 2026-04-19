@@ -1,9 +1,5 @@
 package com.amouri_coding.FitGear.user.client;
 
-import com.amouri_coding.FitGear.user.coach.Coach;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.*;
 
 @Getter
@@ -20,4 +16,9 @@ public class ClientResponse {
     private double weight;
     private double bodyFatPercentage;
 
+    /** null when the client has no training program assigned yet */
+    private Long trainingProgramId;
+
+    /** null when the client has no diet program assigned yet */
+    private Long dietProgramId;
 }
