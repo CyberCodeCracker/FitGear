@@ -48,7 +48,7 @@ public class DietDay {
     private DietProgram program;
 
     @OneToMany(mappedBy = "day", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn(name = "meal_position")
+    @OrderBy("id ASC")
     private List<Meal> meals;
 
     public int calculateTotalCalories() {

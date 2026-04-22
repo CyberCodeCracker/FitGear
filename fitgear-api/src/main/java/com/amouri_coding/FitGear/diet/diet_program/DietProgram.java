@@ -35,7 +35,7 @@ public class DietProgram {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "program" ,cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn(name = "day_position")
+    @OrderBy("id ASC")
     private List<DietDay> days;
 
     @ManyToOne
