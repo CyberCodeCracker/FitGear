@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
@@ -32,10 +31,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     """)
     Page<Client> findAllClientsByName(String name, Pageable pageable, Long coachId);
 
-    @Query("""
-        SELECT client.coach.id FROM Client client
-        WHERE client.id = :clientId
-        """)
+    @Query("SELECT client.coach.id FROM Client client WHERE client.id = :clientId")
     Optional<Long> findCoachIdByClientId(Long clientId);
 
     @EntityGraph(attributePaths = {
@@ -43,9 +39,17 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
             "trainingProgram.trainingDays",
             "trainingProgram.trainingDays.exercises"
     })
-    @Query("""
-            SELECT c FROM Client c
-            WHERE c.id = :clientId
-            """)
+    @Query("SELECT c FROM Client c WHERE c.id = :clientId")
     Optional<Client> findWithTrainingProgramById(Long clientId);
+
+    /**
+     * Loads both program root references only (IDs).
+     * Deep-fetching both programs' collections in one query causes
+     * MultipleBagFetchException because DietProgram.days and DietDay.meals
+     * are both List bags. The frontend fetches full program content via
+     * dedicated endpoints (/training/{programId} and /nutrition/{programId}).
+     */
+    @EntityGraph(attributePaths = { "trainingProgram", "dietProgram" })
+    @Query("SELECT c FROM Client c WHERE c.id = :clientId")
+    Optional<Client> findWithProgramsById(Long clientId);
 }

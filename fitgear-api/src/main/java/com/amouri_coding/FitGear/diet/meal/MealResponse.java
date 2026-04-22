@@ -11,14 +11,12 @@ import java.time.LocalTime;
 @Builder
 public class MealResponse {
 
+    private Long id;
     private String description;
-
     private int calories;
-
     private double protein;
     private double carbs;
     private double fats;
-
     private LocalTime timeToEat;
 
 }

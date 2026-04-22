@@ -118,20 +118,18 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
                     {{ day.dayOfWeek | titlecase }}
                   </p>
                   <div *ngFor="let meal of day.meals"
-                       class="flex items-center justify-between py-2.5 px-3 rounded-lg bg-card-2/60 hover:bg-card-2 transition-colors">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center">
-                        <i class="fa-solid fa-utensils text-warning text-xs"></i>
-                      </div>
-                      <div>
-                        <p class="text-sm font-medium text-white">{{ meal.description }}</p>
-                        <p class="text-xs text-gray-500">
-                          P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g
-                          <span *ngIf="meal.timeToEat"> · {{ meal.timeToEat | slice:0:5 }}</span>
-                        </p>
-                      </div>
+                       class="flex items-start gap-3 py-2.5 px-3 rounded-lg bg-card-2/60 hover:bg-card-2 transition-colors">
+                    <div class="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <i class="fa-solid fa-utensils text-warning text-xs"></i>
                     </div>
-                    <span class="text-sm font-semibold text-warning">{{ meal.calories }} kcal</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white leading-snug">{{ meal.description }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">
+                        P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g
+                        <span *ngIf="meal.timeToEat"> · {{ meal.timeToEat | slice:0:5 }}</span>
+                      </p>
+                    </div>
+                    <span class="text-sm font-semibold text-warning flex-shrink-0">{{ meal.calories }} kcal</span>
                   </div>
                   <div class="flex items-center justify-between px-3 pt-1">
                     <span class="text-xs text-gray-500 uppercase tracking-wider">Day total</span>

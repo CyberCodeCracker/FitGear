@@ -73,7 +73,8 @@ public class CoachService {
 
         Coach connectedCoach = SecurityUtils.getAuthenticatedAndVerifiedCoach(authentication);
 
-        Client client = clientRepository.findById(clientId)
+        // Use the eager-loading query so trainingProgramId and dietProgramId are populated
+        Client client = clientRepository.findWithProgramsById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         if (client.getCoach() == null || !client.getCoach().getId().equals(connectedCoach.getId())) {

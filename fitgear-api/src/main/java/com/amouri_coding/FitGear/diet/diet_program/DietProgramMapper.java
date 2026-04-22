@@ -53,6 +53,7 @@ public class DietProgramMapper {
                 ;
 
         return DietProgramResponse.builder()
+                .id(program.getId())
                 .title(program.getTitle())
                 .description(program.getDescription())
                 .days(dayResponses)

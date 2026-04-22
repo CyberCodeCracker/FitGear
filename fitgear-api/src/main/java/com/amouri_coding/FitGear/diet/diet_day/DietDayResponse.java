@@ -14,13 +14,11 @@ import java.util.List;
 @Builder
 public class DietDayResponse {
 
+    private Long id;
     private DayOfWeek dayOfWeek;
-
     private int totalCaloriesInDay;
-
     private double totalProteinInDay;
     private double totalCarbsInDay;
     private double totalFatsInDay;
-
     private List<MealResponse> meals;
 }

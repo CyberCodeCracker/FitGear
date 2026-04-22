@@ -45,17 +45,20 @@ public class TrainingService {
             throw new AccessDeniedException("You can't assign a program to a client you don't coach");
         }
 
+        // Clear the FK on the client side first, flush, then delete the old program.
+        // Without the intermediate flush Postgres sees two rows with the same client_user_id
+        // and fires the unique constraint before the delete can complete.
         if (client.getTrainingProgram() != null) {
             TrainingProgram oldProgram = client.getTrainingProgram();
             client.setTrainingProgram(null);
+            clientRepository.saveAndFlush(client);
             trainingProgramRepository.delete(oldProgram);
+            trainingProgramRepository.flush();
         }
 
         TrainingProgram program = trainingProgramMapper.toTrainingProgram(request, clientId, coach.getId());
         program.setCreatedAt(LocalDateTime.now());
-        List<TrainingDay> days = program.getTrainingDays();
-
-        for (TrainingDay day : days) {
+        for (TrainingDay day : program.getTrainingDays()) {
             day.setCreatedAt(LocalDateTime.now());
             for (Exercise exercise : day.getExercises()) {
                 exercise.setTrainingDay(day);
@@ -63,12 +66,11 @@ public class TrainingService {
             }
         }
 
-        try {
-            trainingProgramRepository.save(program);
-        } catch (Exception e) {
-            log.error("Failed to assign program: {}", e);
-            throw new RuntimeException("Something went wrong while saving the program");
-        }
+        TrainingProgram saved = trainingProgramRepository.save(program);
+
+        // Explicitly persist the FK back on the client row so getClientByID returns the id
+        client.setTrainingProgram(saved);
+        clientRepository.save(client);
     }
 
     public void addTrainingDay(Long programId, Long clientId, @Valid TrainingDayRequest request, Authentication authentication) {

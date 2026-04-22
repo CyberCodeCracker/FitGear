@@ -35,6 +35,7 @@ public class TrainingDay {
     private DayOfWeek dayOfWeek;
 
     @OneToMany(mappedBy = "trainingDay", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "exercise_position")
     private List<Exercise> exercises;
 
     @Column(name = "BURNED_CALORIES", nullable = false)

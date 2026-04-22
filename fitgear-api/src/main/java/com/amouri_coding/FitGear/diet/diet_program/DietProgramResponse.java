@@ -12,8 +12,8 @@ import java.util.List;
 @Builder
 public class DietProgramResponse {
 
+    private Long id;
     private String title;
     private String description;
-
     private List<DietDayResponse> days;
 }

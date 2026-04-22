@@ -33,6 +33,7 @@ public class NutritionService {
     private final MealRepository mealRepository;
 
     private final EntityUtils entityUtils;
+    private final com.amouri_coding.FitGear.user.client.ClientRepository clientRepository;
 
     private final DietProgramMapper programMapper;
     private final DietDayMapper dietDayMapper;
@@ -47,16 +48,16 @@ public class NutritionService {
             throw new AccessDeniedException("This client isn't yours");
         }
 
+        // Clear FK in client table first, flush, then delete old program to avoid unique constraint violation
         if (client.getDietProgram() != null) {
             DietProgram oldProgram = client.getDietProgram();
-            oldProgram.setClient(null);
             client.setDietProgram(null);
+            clientRepository.saveAndFlush(client);
             dietProgramRepository.delete(oldProgram);
             dietProgramRepository.flush();
         }
 
         DietProgram program = programMapper.toDietProgram(request, clientId, coach.getId());
-
         program.setCreatedAt(LocalDateTime.now());
 
         List<DietDay> days = program.getDays();
@@ -66,10 +67,8 @@ public class NutritionService {
             log.info("Calories {}", day.getTotalCaloriesInDay());
             if (!seenDays.add(day.getDayOfWeek())) {
                 throw new IllegalArgumentException(
-                        "Duplicate day found in diet program: "
-                                + day.getDayOfWeek() +
-                                " Each day of the week must be unique"
-                );
+                        "Duplicate day found in diet program: " + day.getDayOfWeek()
+                        + " — each day of the week must be unique");
             }
         }
 
@@ -80,7 +79,11 @@ public class NutritionService {
             }
         }
 
-        dietProgramRepository.save(program);
+        DietProgram saved = dietProgramRepository.save(program);
+
+        // Persist FK back on client row
+        client.setDietProgram(saved);
+        clientRepository.save(client);
     }
 
     public DietProgramResponse getDietProgram(Long clientId, Long programId, Authentication authentication) {

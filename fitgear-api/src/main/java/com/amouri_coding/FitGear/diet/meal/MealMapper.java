@@ -21,13 +21,13 @@ public class MealMapper {
 
     public MealResponse toMealResponse(Meal meal) {
         return MealResponse.builder()
+                .id(meal.getId())
                 .description(meal.getDescription())
                 .calories(meal.getCalories())
                 .carbs(meal.getCarbs())
                 .fats(meal.getFats())
                 .protein(meal.getProtein())
                 .timeToEat(meal.getTimeToEat())
-                .build()
-                ;
+                .build();
     }
 }

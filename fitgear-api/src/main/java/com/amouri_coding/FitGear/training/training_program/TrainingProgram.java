@@ -24,6 +24,7 @@ public class TrainingProgram {
     private Long id;
 
     @OneToMany(mappedBy = "trainingProgram", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "day_position")
     private List<TrainingDay> trainingDays;
 
     @OneToOne

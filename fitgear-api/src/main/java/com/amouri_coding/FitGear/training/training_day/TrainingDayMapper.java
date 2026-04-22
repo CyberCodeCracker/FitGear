@@ -49,6 +49,7 @@ public class TrainingDayMapper {
                 ;
 
         return TrainingDayResponse.builder()
+                .id(trainingDay.getId())
                 .title(trainingDay.getTitle())
                 .dayOfWeek(trainingDay.getDayOfWeek())
                 .estimatedBurnedCalories(trainingDay.getEstimatedBurnedCalories())

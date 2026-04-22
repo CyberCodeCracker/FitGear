@@ -46,6 +46,7 @@ public class DietDayMapper {
                 ;
 
         DietDayResponse dayResponse = DietDayResponse.builder()
+                .id(dietDay.getId())
                 .dayOfWeek(dietDay.getDayOfWeek())
                 .totalCarbsInDay(dietDay.getTotalCarbsInDay())
                 .totalCaloriesInDay(dietDay.getTotalCaloriesInDay())
