@@ -47,7 +47,7 @@ public class TrainingService {
 
         // Clear the FK on the client side first, flush, then delete the old program.
         // Without the intermediate flush Postgres sees two rows with the same client_user_id
-        // and fires the unique constraint before the delete can complete.
+        // and fires the unique constraint before delete can complete.
         if (client.getTrainingProgram() != null) {
             TrainingProgram oldProgram = client.getTrainingProgram();
             client.setTrainingProgram(null);
@@ -211,8 +211,7 @@ public class TrainingService {
             throw new IllegalStateException("This exercise is not associated with selected day");
         }
 
-        ExerciseResponse exerciseResponse = exerciseMapper.toExerciseResponse(exercise);
-        return exerciseResponse;
+        return exerciseMapper.toExerciseResponse(exercise);
     }
 
     public TrainingDayResponse editTrainingDay(Long dayId, Long clientId, Long programId, @Valid TrainingDayRequest request, Authentication authentication) {
