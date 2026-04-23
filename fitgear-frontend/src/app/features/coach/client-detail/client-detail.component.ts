@@ -83,15 +83,40 @@ const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUN
                   <i *ngIf="loadingTraining()" class="fa-solid fa-spinner fa-spin text-gray-400 text-sm"></i>
                 </div>
                 <ng-container *ngIf="training() as tp">
-                  <div *ngFor="let day of tp.trainingDays"
-                       class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-card-2/60 hover:bg-card-2">
-                    <div>
-                      <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
-                      <p class="text-xs text-gray-500">{{ day.title }}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="badge badge-green">{{ day.exercises.length }} ex.</span>
-                      <span class="text-xs text-gray-500">~{{ day.estimatedBurnedCalories }} kcal</span>
+                  <div *ngFor="let day of tp.trainingDays; let di = index">
+                    <button (click)="toggleTrainingDay(di)" type="button"
+                      class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg
+                             bg-card-2/60 hover:bg-card-2 transition-all duration-200 cursor-pointer
+                             border border-transparent"
+                      [ngClass]="expandedTraining().has(di) ? 'border-accent/30 bg-card-2' : ''">
+                      <div class="text-left">
+                        <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
+                        <p class="text-xs text-gray-500">{{ day.title }}</p>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="badge badge-green">{{ day.exercises.length }} ex.</span>
+                        <span class="text-xs text-gray-500">~{{ day.estimatedBurnedCalories }} kcal</span>
+                        <i class="fa-solid text-gray-400 text-xs transition-transform duration-200"
+                           [class.fa-chevron-down]="!expandedTraining().has(di)"
+                           [class.fa-chevron-up]="expandedTraining().has(di)"></i>
+                      </div>
+                    </button>
+                    <div *ngIf="expandedTraining().has(di)"
+                         class="ml-4 pl-4 border-l-2 border-accent/20 space-y-1.5 py-2 animate-slide-up">
+                      <div *ngFor="let ex of day.exercises; let ei = index"
+                           class="flex items-center gap-3 py-2 px-3 rounded-lg bg-card-2/40">
+                        <span class="w-6 h-6 rounded-full bg-accent/15 flex items-center justify-center text-accent text-xs font-bold flex-shrink-0">
+                          {{ ei + 1 }}
+                        </span>
+                        <div>
+                          <p class="text-sm font-medium text-white">{{ ex.title }}</p>
+                          <p class="text-xs text-gray-500">
+                            {{ ex.numberOfSets }} sets × {{ ex.numberOfReps }} reps
+                            <span *ngIf="ex.restTime"> · {{ ex.restTime }}s rest</span>
+                          </p>
+                        </div>
+                      </div>
+                      <p *ngIf="!day.exercises.length" class="text-xs text-gray-500 py-2 text-center">No exercises.</p>
                     </div>
                   </div>
                 </ng-container>
@@ -115,16 +140,42 @@ const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUN
                   <i *ngIf="loadingDiet()" class="fa-solid fa-spinner fa-spin text-gray-400 text-sm"></i>
                 </div>
                 <ng-container *ngIf="diet() as dp">
-                  <div *ngFor="let day of dp.days" class="space-y-1">
-                    <p class="text-xs text-gray-500 uppercase tracking-wider px-1">{{ day.dayOfWeek | titlecase }}</p>
-                    <div *ngFor="let meal of day.meals"
-                         class="flex items-start gap-3 px-3 py-2 rounded-lg bg-card-2/60 hover:bg-card-2">
-                      <i class="fa-solid fa-utensils text-warning text-xs mt-1 flex-shrink-0"></i>
-                      <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white">{{ meal.description }}</p>
-                        <p class="text-xs text-gray-500">P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g</p>
+                  <div *ngFor="let day of dp.days; let di = index" class="space-y-1">
+                    <button (click)="toggleDietDay(di)" type="button"
+                      class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg
+                             bg-card-2/60 hover:bg-card-2 transition-all duration-200 cursor-pointer
+                             border border-transparent"
+                      [ngClass]="expandedDiet().has(di) ? 'border-warning/30 bg-card-2' : ''">
+                      <div class="text-left">
+                        <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
+                        <p class="text-xs text-gray-500">{{ day.meals.length }} meals · {{ day.totalCaloriesInDay }} kcal</p>
                       </div>
-                      <span class="text-sm font-semibold text-warning flex-shrink-0">{{ meal.calories }} kcal</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500">
+                          P:{{ day.totalProteinInDay }}g · C:{{ day.totalCarbsInDay }}g · F:{{ day.totalFatsInDay }}g
+                        </span>
+                        <i class="fa-solid text-gray-400 text-xs transition-transform duration-200"
+                           [class.fa-chevron-down]="!expandedDiet().has(di)"
+                           [class.fa-chevron-up]="expandedDiet().has(di)"></i>
+                      </div>
+                    </button>
+                    <div *ngIf="expandedDiet().has(di)"
+                         class="ml-4 pl-4 border-l-2 border-warning/20 space-y-1.5 py-2 animate-slide-up">
+                      <div *ngFor="let meal of day.meals"
+                           class="flex items-start gap-3 py-2.5 px-3 rounded-lg bg-card-2/40">
+                        <div class="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <i class="fa-solid fa-utensils text-warning text-[10px]"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-white leading-snug">{{ meal.description }}</p>
+                          <p class="text-xs text-gray-500 mt-0.5">
+                            P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g
+                            <span *ngIf="meal.timeToEat"> · {{ meal.timeToEat | slice:0:5 }}</span>
+                          </p>
+                        </div>
+                        <span class="text-sm font-semibold text-warning flex-shrink-0">{{ meal.calories }} kcal</span>
+                      </div>
+                      <p *ngIf="!day.meals.length" class="text-xs text-gray-500 py-2 text-center">No meals.</p>
                     </div>
                   </div>
                 </ng-container>
@@ -383,6 +434,10 @@ export class ClientDetailComponent implements OnInit {
   activeTab       = signal<Tab>('overview');
   clientId        = 0;
 
+  // Accordion state for overview tab
+  expandedTraining = signal(new Set<number>());
+  expandedDiet     = signal(new Set<number>());
+
   tabs = [
     { key: 'overview' as Tab, label: 'Overview',  icon: 'fa-gauge-high' },
     { key: 'training' as Tab, label: 'Training',  icon: 'fa-dumbbell'   },
@@ -414,6 +469,22 @@ export class ClientDetailComponent implements OnInit {
   }
 
   setTab(t: Tab): void { this.activeTab.set(t); }
+
+  toggleTrainingDay(index: number): void {
+    this.expandedTraining.update(s => {
+      const next = new Set(s);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+  }
+
+  toggleDietDay(index: number): void {
+    this.expandedDiet.update(s => {
+      const next = new Set(s);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+  }
 
   // ── Load existing programs ────────────────────────────────────────
   private loadTraining(programId: number): void {

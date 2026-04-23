@@ -17,15 +17,20 @@ export const routes: Routes = [
     ],
   },
 
+  // ── Profile (any authenticated user) ───────────────────────────
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/shared/profile/profile.component').then(m => m.ProfileComponent),
+  },
+
   // ── Client (role: CLIENT) ──────────────────────────────────────
   {
     path: 'client',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['CLIENT'] },
     children: [
-      // coaches page: open to all clients (even without a coach yet)
-      { path: 'coaches', loadComponent: () => import('./features/client/coaches/coaches.component').then(m => m.CoachesComponent) },
-      // dashboard & progress require a coach to be assigned first
+      { path: 'coaches',   loadComponent: () => import('./features/client/coaches/coaches.component').then(m => m.CoachesComponent) },
       { path: 'dashboard', canActivate: [coachRequiredGuard], loadComponent: () => import('./features/client/dashboard/client-dashboard.component').then(m => m.ClientDashboardComponent) },
       { path: 'progress',  canActivate: [coachRequiredGuard], loadComponent: () => import('./features/client/progress/client-progress.component').then(m => m.ClientProgressComponent) },
       { path: '', redirectTo: 'coaches', pathMatch: 'full' },

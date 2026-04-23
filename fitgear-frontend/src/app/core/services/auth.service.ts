@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { Observable, tap, switchMap } from 'rxjs';
 import {
   LoginRequest, AuthResponse, MeResponse,
-  ClientRegistrationRequest, CoachRegistrationRequest
+  ClientRegistrationRequest, CoachRegistrationRequest,
+  UpdateProfileRequest
 } from '../models/models';
 
 const API = 'http://localhost:8080/api/v1';
@@ -47,6 +48,16 @@ export class AuthService {
   // ── Me ────────────────────────────────────────────────────────────────────
   fetchMe(): Observable<MeResponse> {
     return this.http.get<MeResponse>(`${API}/me`).pipe(
+      tap(me => {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(me));
+        this._user.set(me);
+      })
+    );
+  }
+
+  // ── Update profile ─────────────────────────────────────────────────────────
+  updateProfile(payload: UpdateProfileRequest): Observable<MeResponse> {
+    return this.http.put<MeResponse>(`${API}/me`, payload).pipe(
       tap(me => {
         localStorage.setItem(this.USER_KEY, JSON.stringify(me));
         this._user.set(me);

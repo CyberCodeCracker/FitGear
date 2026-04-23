@@ -92,10 +92,12 @@ export class SidebarComponent implements OnInit {
     return this.auth.isCoach() ? [
       { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/coach/dashboard'  },
       { label: 'My Clients',  icon: 'fa-users',        route: '/coach/clients'    },
+      { label: 'Profile',     icon: 'fa-user-pen',     route: '/profile'          },
     ] : [
       { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/client/dashboard' },
       { label: 'Coaches',     icon: 'fa-medal',        route: '/client/coaches'   },
       { label: 'Progress',    icon: 'fa-chart-line',   route: '/client/progress'  },
+      { label: 'Profile',     icon: 'fa-user-pen',     route: '/profile'          },
     ];
   }
 

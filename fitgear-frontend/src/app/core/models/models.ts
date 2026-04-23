@@ -7,8 +7,12 @@ export interface MeResponse {
   email: string; roles: string[];
   userType: 'CLIENT' | 'COACH' | 'UNKNOWN';
   coach?: CoachSummary | null;
+  // Client-only
   height?: number; weight?: number; bodyFatPercentage?: number;
+  // Coach-only
   rating?: number; monthlyRate?: number;
+  description?: string; phoneNumber?: string;
+  yearsOfExperience?: number; isAvailable?: boolean;
 }
 
 export interface CoachSummary {
@@ -114,6 +118,17 @@ export interface DietDayRequest {
 export interface DietProgramRequest {
   title: string; description: string;
   days: DietDayRequest[];
+}
+
+// ─── Profile update ────────────────────────────────────────────────
+export interface UpdateProfileRequest {
+  firstName: string; lastName: string;
+  // Client-only
+  height?: number; weight?: number; bodyFatPercentage?: number;
+  // Coach-only
+  description?: string; phoneNumber?: string;
+  yearsOfExperience?: number; monthlyRate?: number;
+  isAvailable?: boolean;
 }
 
 // ─── Progress (client-local) ───────────────────────────────────────

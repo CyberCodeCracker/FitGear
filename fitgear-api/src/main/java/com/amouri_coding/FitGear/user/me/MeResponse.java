@@ -27,5 +27,9 @@ public class MeResponse {
     // Coach-only fields
     private Double rating;
     private Double monthlyRate;
+    private String description;
+    private String phoneNumber;
+    private Integer yearsOfExperience;
+    private Boolean isAvailable;
 }
 

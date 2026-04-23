@@ -15,7 +15,6 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
   template: `
     <div class="flex min-h-screen bg-bg">
       <app-sidebar></app-sidebar>
-
       <div class="flex-1 flex flex-col min-w-0">
         <app-navbar title="Dashboard">
           <a routerLink="/client/progress" class="btn-secondary btn-sm">
@@ -25,21 +24,19 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
 
         <main class="flex-1 p-6 space-y-6 animate-fade-in">
 
-          <!-- Welcome banner -->
+          <!-- Welcome -->
           <div class="card bg-gradient-to-r from-accent/15 via-card to-card border-accent/20">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-gray-400 text-sm mb-1">Good {{ greeting }} 👋</p>
-                <h2 class="text-2xl font-bold text-white">
-                  {{ auth.user()?.firstName }} {{ auth.user()?.lastName }}
-                </h2>
+                <h2 class="text-2xl font-bold text-white">{{ auth.user()?.firstName }} {{ auth.user()?.lastName }}</h2>
                 <p class="text-muted mt-1">Here's your progress overview for this month.</p>
               </div>
               <div class="hidden md:block text-6xl opacity-20">💪</div>
             </div>
           </div>
 
-          <!-- Stats row (from registration data) -->
+          <!-- Stats -->
           <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <app-stat-card label="Height" [value]="auth.user()?.height ?? '—'" unit="cm"
               icon="fa-ruler-vertical" iconColor="#22C55E" iconBg="rgba(34,197,94,0.15)"></app-stat-card>
@@ -49,10 +46,10 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
               icon="fa-percent" iconColor="#F59E0B" iconBg="rgba(245,158,11,0.15)"></app-stat-card>
           </div>
 
-          <!-- Middle row: Training + Diet -->
+          <!-- Training + Diet -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- Training Program -->
+            <!-- ═══ TRAINING PROGRAM ═══ -->
             <div class="card space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="section-title flex items-center gap-2">
@@ -61,32 +58,58 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
                 <span *ngIf="!loadingTraining() && training()?.trainingDays?.length" class="badge badge-green">Active</span>
               </div>
 
-              <!-- Skeleton -->
               <div *ngIf="loadingTraining()" class="space-y-2">
                 <div *ngFor="let s of [1,2,3]" class="h-14 bg-card-2 rounded-lg animate-pulse"></div>
               </div>
 
-              <!-- Training days -->
               <div *ngIf="!loadingTraining() && training()?.trainingDays?.length" class="space-y-2">
-                <div *ngFor="let day of training()!.trainingDays"
-                     class="flex items-center justify-between py-2.5 px-3 rounded-lg bg-card-2/60 hover:bg-card-2 transition-colors">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center">
-                      <i class="fa-solid fa-calendar-day text-accent text-xs"></i>
+                <div *ngFor="let day of training()!.trainingDays; let di = index">
+                  <!-- Day header — click to expand -->
+                  <button (click)="toggleTrainingDay(di)" type="button"
+                    class="w-full flex items-center justify-between py-2.5 px-3 rounded-lg
+                           bg-card-2/60 hover:bg-card-2 transition-all duration-200 cursor-pointer
+                           border border-transparent"
+                    [ngClass]="expandedTraining().has(di) ? 'border-accent/30 bg-card-2' : ''">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-day text-accent text-xs"></i>
+                      </div>
+                      <div class="text-left">
+                        <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
+                        <p class="text-xs text-gray-500">{{ day.title }}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
-                      <p class="text-xs text-gray-500">{{ day.title }}</p>
+                    <div class="flex items-center gap-2">
+                      <span class="badge badge-green text-xs">{{ day.exercises.length }} ex.</span>
+                      <span class="text-xs text-gray-500">~{{ day.estimatedBurnedCalories }} kcal</span>
+                      <i class="fa-solid text-gray-400 text-xs transition-transform duration-200"
+                         [class.fa-chevron-down]="!expandedTraining().has(di)"
+                         [class.fa-chevron-up]="expandedTraining().has(di)"></i>
                     </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="badge badge-green text-xs">{{ day.exercises.length }} ex.</span>
-                    <span class="text-xs text-gray-500">~{{ day.estimatedBurnedCalories }} kcal</span>
+                  </button>
+
+                  <!-- Exercises (expanded) -->
+                  <div *ngIf="expandedTraining().has(di)"
+                       class="ml-4 pl-4 border-l-2 border-accent/20 space-y-1.5 py-2 animate-slide-up">
+                    <div *ngFor="let ex of day.exercises; let ei = index"
+                         class="flex items-center gap-3 py-2 px-3 rounded-lg bg-card-2/40">
+                      <span class="w-6 h-6 rounded-full bg-accent/15 flex items-center justify-center text-accent text-xs font-bold flex-shrink-0">
+                        {{ ei + 1 }}
+                      </span>
+                      <div>
+                        <p class="text-sm font-medium text-white">{{ ex.title }}</p>
+                        <p class="text-xs text-gray-500">
+                          {{ ex.numberOfSets }} sets × {{ ex.numberOfReps }} reps
+                          <span *ngIf="ex.restTime"> · {{ ex.restTime }}s rest</span>
+                        </p>
+                      </div>
+                    </div>
+                    <p *ngIf="!day.exercises.length" class="text-xs text-gray-500 py-2 text-center">No exercises.</p>
                   </div>
                 </div>
               </div>
 
-              <!-- No training yet -->
+              <!-- No training -->
               <div *ngIf="!loadingTraining() && !training()?.trainingDays?.length"
                    class="flex flex-col items-center justify-center py-8 text-center gap-2">
                 <i class="fa-solid fa-dumbbell text-gray-600 text-3xl"></i>
@@ -95,7 +118,7 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
               </div>
             </div>
 
-            <!-- Diet Plan -->
+            <!-- ═══ DIET PLAN ═══ -->
             <div class="card space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="section-title flex items-center gap-2">
@@ -106,39 +129,62 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
                 </span>
               </div>
 
-              <!-- Skeleton -->
               <div *ngIf="loadingDiet()" class="space-y-2">
-                <div *ngFor="let s of [1,2,3,4]" class="h-14 bg-card-2 rounded-lg animate-pulse"></div>
+                <div *ngFor="let s of [1,2,3]" class="h-14 bg-card-2 rounded-lg animate-pulse"></div>
               </div>
 
-              <!-- Diet days -->
               <ng-container *ngIf="!loadingDiet() && diet()?.days?.length">
-                <div *ngFor="let day of diet()!.days" class="space-y-2">
-                  <p class="text-xs text-gray-500 uppercase tracking-wider px-1">
-                    {{ day.dayOfWeek | titlecase }}
-                  </p>
-                  <div *ngFor="let meal of day.meals"
-                       class="flex items-start gap-3 py-2.5 px-3 rounded-lg bg-card-2/60 hover:bg-card-2 transition-colors">
-                    <div class="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <i class="fa-solid fa-utensils text-warning text-xs"></i>
+                <p *ngIf="diet()!.description" class="text-muted text-sm px-1">{{ diet()!.description }}</p>
+
+                <div *ngFor="let day of diet()!.days; let di = index" class="space-y-1">
+                  <!-- Day header — click to expand -->
+                  <button (click)="toggleDietDay(di)" type="button"
+                    class="w-full flex items-center justify-between py-2.5 px-3 rounded-lg
+                           bg-card-2/60 hover:bg-card-2 transition-all duration-200 cursor-pointer
+                           border border-transparent"
+                    [ngClass]="expandedDiet().has(di) ? 'border-warning/30 bg-card-2' : ''">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-day text-warning text-xs"></i>
+                      </div>
+                      <div class="text-left">
+                        <p class="text-sm font-medium text-white">{{ day.dayOfWeek | titlecase }}</p>
+                        <p class="text-xs text-gray-500">{{ day.meals.length }} meals · {{ day.totalCaloriesInDay }} kcal</p>
+                      </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-white leading-snug">{{ meal.description }}</p>
-                      <p class="text-xs text-gray-500 mt-0.5">
-                        P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g
-                        <span *ngIf="meal.timeToEat"> · {{ meal.timeToEat | slice:0:5 }}</span>
-                      </p>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-gray-500">
+                        P:{{ day.totalProteinInDay }}g · C:{{ day.totalCarbsInDay }}g · F:{{ day.totalFatsInDay }}g
+                      </span>
+                      <i class="fa-solid text-gray-400 text-xs transition-transform duration-200"
+                         [class.fa-chevron-down]="!expandedDiet().has(di)"
+                         [class.fa-chevron-up]="expandedDiet().has(di)"></i>
                     </div>
-                    <span class="text-sm font-semibold text-warning flex-shrink-0">{{ meal.calories }} kcal</span>
-                  </div>
-                  <div class="flex items-center justify-between px-3 pt-1">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider">Day total</span>
-                    <span class="font-bold text-white text-sm">{{ day.totalCaloriesInDay }} kcal</span>
+                  </button>
+
+                  <!-- Meals (expanded) -->
+                  <div *ngIf="expandedDiet().has(di)"
+                       class="ml-4 pl-4 border-l-2 border-warning/20 space-y-1.5 py-2 animate-slide-up">
+                    <div *ngFor="let meal of day.meals"
+                         class="flex items-start gap-3 py-2.5 px-3 rounded-lg bg-card-2/40">
+                      <div class="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-utensils text-warning text-[10px]"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white leading-snug">{{ meal.description }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                          P:{{ meal.protein }}g · C:{{ meal.carbs }}g · F:{{ meal.fats }}g
+                          <span *ngIf="meal.timeToEat"> · {{ meal.timeToEat | slice:0:5 }}</span>
+                        </p>
+                      </div>
+                      <span class="text-sm font-semibold text-warning flex-shrink-0">{{ meal.calories }} kcal</span>
+                    </div>
+                    <p *ngIf="!day.meals.length" class="text-xs text-gray-500 py-2 text-center">No meals.</p>
                   </div>
                 </div>
               </ng-container>
 
-              <!-- No diet yet -->
+              <!-- No diet -->
               <div *ngIf="!loadingDiet() && !diet()?.days?.length"
                    class="flex flex-col items-center justify-center py-8 text-center gap-2">
                 <i class="fa-solid fa-bowl-food text-gray-600 text-3xl"></i>
@@ -176,10 +222,14 @@ export class ClientDashboardComponent implements OnInit {
   private api = inject(ClientApiService);
   Math = Math;
 
-  training     = signal<TrainingProgramResponse | null>(null);
-  diet         = signal<DietProgramResponse | null>(null);
+  training        = signal<TrainingProgramResponse | null>(null);
+  diet            = signal<DietProgramResponse | null>(null);
   loadingTraining = signal(true);
   loadingDiet     = signal(true);
+
+  // Accordion state — stores the indices of expanded days
+  expandedTraining = signal(new Set<number>());
+  expandedDiet     = signal(new Set<number>());
 
   get greeting(): string {
     const h = new Date().getHours();
@@ -188,12 +238,27 @@ export class ClientDashboardComponent implements OnInit {
     return 'evening';
   }
 
+  toggleTrainingDay(index: number): void {
+    this.expandedTraining.update(s => {
+      const next = new Set(s);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+  }
+
+  toggleDietDay(index: number): void {
+    this.expandedDiet.update(s => {
+      const next = new Set(s);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+  }
+
   ngOnInit(): void {
     this.api.getMyTrainingProgram().subscribe({
       next: res => { this.training.set(res); this.loadingTraining.set(false); },
       error: ()  => this.loadingTraining.set(false)
     });
-
     this.api.getMyDietProgram().subscribe({
       next: res => { this.diet.set(res); this.loadingDiet.set(false); },
       error: ()  => this.loadingDiet.set(false)
