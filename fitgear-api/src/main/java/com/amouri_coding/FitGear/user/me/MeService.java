@@ -25,7 +25,6 @@ public class MeService {
     ) {
         User user = (User) authentication.getPrincipal();
 
-        // Common fields
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
 

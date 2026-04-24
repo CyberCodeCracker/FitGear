@@ -10,14 +10,12 @@ import lombok.*;
 @AllArgsConstructor
 public class UpdateProfileRequest {
 
-    // ── Common fields ──────────────────────────────────────────────
     @NotBlank(message = "First name is required")
     private String firstName;
 
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    // ── Client-only fields (ignored if user is a coach) ────────────
     @Min(value = 100, message = "Please input a valid height")
     private Double height;
 
@@ -27,7 +25,6 @@ public class UpdateProfileRequest {
     @Min(value = 0) @Max(value = 80)
     private Double bodyFatPercentage;
 
-    // ── Coach-only fields (ignored if user is a client) ────────────
     private String description;
 
     @Pattern(regexp = "^[0-9]{8}$", message = "Phone number must be 8 digits")

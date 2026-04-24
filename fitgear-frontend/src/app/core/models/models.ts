@@ -131,10 +131,23 @@ export interface UpdateProfileRequest {
   isAvailable?: boolean;
 }
 
-// ─── Progress (client-local) ───────────────────────────────────────
+// ─── Progress ──────────────────────────────────────────────────────
 export interface ProgressEntry {
-  id: number; date: string; weight: number;
-  bodyFat: number; muscleMass?: number; notes?: string;
+  id: number;
+  entryDate: string;       // "yyyy-MM-dd"
+  weight: number;
+  bodyFat: number;
+  muscleMass?: number | null;
+  notes?: string | null;
+  createdAt?: string;
+}
+
+export interface ProgressEntryRequest {
+  entryDate: string;
+  weight: number;
+  bodyFat: number;
+  muscleMass?: number | null;
+  notes?: string | null;
 }
 
 // ─── Pagination ────────────────────────────────────────────────────

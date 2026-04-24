@@ -4,7 +4,8 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
   CoachCard, ClientCoachResponse,
-  TrainingProgramResponse, DietProgramResponse, PageResponse
+  TrainingProgramResponse, DietProgramResponse, PageResponse,
+  ProgressEntry, ProgressEntryRequest
 } from '../models/models';
 
 const API = 'http://localhost:8080/api/v1';
@@ -44,5 +45,18 @@ export class ClientApiService {
     return this.http.get<DietProgramResponse>(`${API}/clients/me/nutrition/program`).pipe(
       catchError(() => of(null))
     );
+  }
+
+  // ── Progress ─────────────────────────────────────────────────────
+  getProgressEntries(): Observable<ProgressEntry[]> {
+    return this.http.get<ProgressEntry[]>(`${API}/clients/me/progress`);
+  }
+
+  createProgressEntry(request: ProgressEntryRequest): Observable<ProgressEntry> {
+    return this.http.post<ProgressEntry>(`${API}/clients/me/progress`, request);
+  }
+
+  deleteProgressEntry(entryId: number): Observable<void> {
+    return this.http.delete<void>(`${API}/clients/me/progress/${entryId}`);
   }
 }
