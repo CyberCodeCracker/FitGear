@@ -15,7 +15,8 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
     <div class="flex min-h-screen bg-bg">
       <app-sidebar></app-sidebar>
       <div class="flex-1 flex flex-col min-w-0">
-        <app-navbar title="My Profile"></app-navbar>
+        <app-navbar title="My Profile"
+          [breadcrumbs]="[{label:'Dashboard',route: auth.isCoach() ? '/coach/dashboard' : '/client/dashboard'}]"></app-navbar>
 
         <main class="flex-1 p-6 space-y-6 animate-fade-in">
 

@@ -15,6 +15,7 @@ public class CoachCardResponse {
     private int yearsOfExperience;
     private double monthlyRate;
     private double rating;
+    private long reviewCount;
     private String profilePicture;
 }
 

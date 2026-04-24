@@ -30,7 +30,8 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: ['CLIENT'] },
     children: [
-      { path: 'coaches',   loadComponent: () => import('./features/client/coaches/coaches.component').then(m => m.CoachesComponent) },
+      { path: 'coaches',      loadComponent: () => import('./features/client/coaches/coaches.component').then(m => m.CoachesComponent) },
+      { path: 'coaches/:id',  loadComponent: () => import('./features/client/coach-profile/coach-profile.component').then(m => m.CoachProfileComponent) },
       { path: 'dashboard', canActivate: [coachRequiredGuard], loadComponent: () => import('./features/client/dashboard/client-dashboard.component').then(m => m.ClientDashboardComponent) },
       { path: 'progress',  canActivate: [coachRequiredGuard], loadComponent: () => import('./features/client/progress/client-progress.component').then(m => m.ClientProgressComponent) },
       { path: '', redirectTo: 'coaches', pathMatch: 'full' },

@@ -23,7 +23,11 @@ const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUN
       <div class="flex-1 flex flex-col min-w-0">
 
         <app-navbar title="Client Management"
-          [breadcrumbs]="[{label:'Clients',route:'/coach/clients'},{label:clientName()}]">
+          [breadcrumbs]="[
+            {label:'Dashboard', route:'/coach/dashboard'},
+            {label:'Clients', route:'/coach/clients'},
+            {label:clientName()}
+          ]">
         </app-navbar>
 
         <div *ngIf="loading()" class="flex-1 flex items-center justify-center">

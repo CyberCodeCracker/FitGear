@@ -17,7 +17,8 @@ import { ProgressEntry } from '../../../core/models/models';
       <app-sidebar></app-sidebar>
 
       <div class="flex-1 flex flex-col min-w-0">
-        <app-navbar title="Progress Tracking">
+        <app-navbar title="Progress Tracking"
+          [breadcrumbs]="[{label:'Dashboard',route:'/client/dashboard'}]">
           <button (click)="showForm.set(!showForm())" class="btn-primary btn-sm">
             <i class="fa-solid fa-plus"></i> Log Entry
           </button>

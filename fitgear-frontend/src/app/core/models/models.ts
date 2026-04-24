@@ -37,7 +37,24 @@ export interface ClientRegistrationRequest {
 export interface CoachCard {
   id: number; fullName: string; description: string;
   yearsOfExperience: number; monthlyRate: number; rating: number;
-  profilePicture?: string;
+  reviewCount: number; profilePicture?: string;
+}
+
+// ─── Coach Detail ──────────────────────────────────────────────────
+export interface CoachDetailResponse {
+  id: number; fullName: string; description: string;
+  yearsOfExperience: number; monthlyRate: number; rating: number;
+  reviewCount: number; phoneNumber?: string; profilePicture?: string;
+  available: boolean; testimonials: TestimonialResponse[];
+}
+
+// ─── Testimonials ──────────────────────────────────────────────────
+export interface TestimonialResponse {
+  id: number; clientName: string; clientInitials: string;
+  rating: number; comment?: string; createdAt?: string;
+}
+export interface TestimonialRequest {
+  rating: number; comment?: string;
 }
 
 // ─── Subscription ──────────────────────────────────────────────────

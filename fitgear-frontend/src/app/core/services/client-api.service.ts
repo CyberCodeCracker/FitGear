@@ -3,9 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
-  CoachCard, ClientCoachResponse,
+  CoachCard, ClientCoachResponse, CoachDetailResponse,
   TrainingProgramResponse, DietProgramResponse, PageResponse,
-  ProgressEntry, ProgressEntryRequest
+  ProgressEntry, ProgressEntryRequest,
+  TestimonialResponse, TestimonialRequest
 } from '../models/models';
 
 const API = 'http://localhost:8080/api/v1';
@@ -19,6 +20,23 @@ export class ClientApiService {
     const params: Record<string, string | number> = { page, size };
     if (q) params['q'] = q;
     return this.http.get<PageResponse<CoachCard>>(`${API}/coaches`, { params });
+  }
+
+  getCoachDetail(coachId: number): Observable<CoachDetailResponse> {
+    return this.http.get<CoachDetailResponse>(`${API}/coaches/${coachId}`);
+  }
+
+  // ── Testimonials ──────────────────────────────────────────────────
+  getTestimonials(coachId: number): Observable<TestimonialResponse[]> {
+    return this.http.get<TestimonialResponse[]>(`${API}/coaches/${coachId}/testimonials`);
+  }
+
+  submitTestimonial(coachId: number, request: TestimonialRequest): Observable<TestimonialResponse> {
+    return this.http.post<TestimonialResponse>(`${API}/coaches/${coachId}/testimonials`, request);
+  }
+
+  deleteTestimonial(coachId: number, testimonialId: number): Observable<void> {
+    return this.http.delete<void>(`${API}/coaches/${coachId}/testimonials/${testimonialId}`);
   }
 
   subscribeToCoach(coachId: number): Observable<ClientCoachResponse> {

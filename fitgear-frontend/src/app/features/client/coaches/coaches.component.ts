@@ -91,7 +91,7 @@ import { CoachCard } from '../../../core/models/models';
                     <i *ngFor="let s of [1,2,3,4,5]" class="fa-solid fa-star text-xs"
                        [class.text-warning]="s <= Math.floor(coach.rating)"
                        [class.text-gray-600]="s > Math.floor(coach.rating)"></i>
-                    <span class="text-xs text-gray-400 ml-1">{{ coach.rating }}</span>
+                    <span class="text-xs text-gray-400 ml-1">{{ coach.rating }} ({{ coach.reviewCount }})</span>
                   </div>
                   <p class="text-xs text-gray-500 mt-0.5">
                     <i class="fa-solid fa-briefcase mr-1"></i>{{ coach.yearsOfExperience }} yrs exp.
@@ -104,7 +104,10 @@ import { CoachCard } from '../../../core/models/models';
               <div class="divider my-0"></div>
 
               <div class="flex items-center gap-2">
-                <button (click)="subscribe(coach)"
+                <a [routerLink]="['/client/coaches', coach.id]" class="btn-secondary flex-1 justify-center text-sm">
+                  <i class="fa-solid fa-eye"></i> Details
+                </a>
+                <button (click)="subscribe(coach); $event.stopPropagation()"
                         class="flex-1 justify-center text-sm"
                         [class]="currentCoachId() === coach.id ? 'btn btn-secondary cursor-default' : 'btn-primary btn'"
                         [disabled]="subscribing() || currentCoachId() === coach.id">
