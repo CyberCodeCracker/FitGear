@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,21 +24,55 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
           <!-- Header -->
           <div class="card bg-gradient-to-r from-accent/15 via-card to-card border-accent/20">
             <div class="flex items-center gap-5">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-accent/30 to-accent/10
-                          flex items-center justify-center text-accent text-3xl font-bold flex-shrink-0">
-                {{ initials }}
+              <!-- Avatar / Profile Picture -->
+              <div class="relative group flex-shrink-0">
+                <div *ngIf="!auth.pictureUrl(auth.user()?.profilePicture)"
+                     class="w-20 h-20 rounded-full bg-gradient-to-br from-accent/30 to-accent/10
+                            flex items-center justify-center text-accent text-3xl font-bold">
+                  {{ initials }}
+                </div>
+                <img *ngIf="auth.pictureUrl(auth.user()?.profilePicture)"
+                     [src]="auth.pictureUrl(auth.user()?.profilePicture)"
+                     alt="Profile picture"
+                     class="w-20 h-20 rounded-full object-cover border-2 border-accent/30">
+                <!-- Overlay for coaches -->
+                <ng-container *ngIf="auth.isCoach()">
+                  <label class="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100
+                                flex items-center justify-center cursor-pointer transition-opacity duration-200">
+                    <i class="fa-solid fa-camera text-white text-lg"></i>
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                           class="hidden" (change)="onPictureSelected($event)">
+                  </label>
+                  <button *ngIf="auth.user()?.profilePicture" (click)="deletePicture()"
+                          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-danger text-white
+                                 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100
+                                 transition-opacity duration-200 hover:bg-danger/80"
+                          title="Remove picture">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </ng-container>
+                <!-- Uploading spinner -->
+                <div *ngIf="uploading()"
+                     class="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                  <i class="fa-solid fa-spinner fa-spin text-white text-lg"></i>
+                </div>
               </div>
               <div>
                 <h2 class="text-2xl font-bold text-white">
                   {{ auth.user()?.firstName }} {{ auth.user()?.lastName }}
                 </h2>
                 <p class="text-muted">{{ auth.user()?.email }}</p>
-                <span class="badge mt-1.5"
-                      [class.badge-green]="auth.isCoach()"
-                      [class.badge-blue]="auth.isClient()">
-                  <i class="fa-solid" [class.fa-shield-halved]="auth.isCoach()" [class.fa-user]="auth.isClient()"></i>
-                  {{ auth.isCoach() ? 'Coach' : 'Client' }}
-                </span>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span class="badge"
+                        [class.badge-green]="auth.isCoach()"
+                        [class.badge-blue]="auth.isClient()">
+                    <i class="fa-solid" [class.fa-shield-halved]="auth.isCoach()" [class.fa-user]="auth.isClient()"></i>
+                    {{ auth.isCoach() ? 'Coach' : 'Client' }}
+                  </span>
+                  <span *ngIf="auth.isCoach()" class="text-xs text-gray-500">
+                    Hover over your picture to change it (max 5 MB)
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -179,6 +214,7 @@ export class ProfileComponent implements OnInit {
 
   loading = signal(false);
   saved   = signal(false);
+  uploading = signal(false);
 
   form = this.fb.group({
     firstName:         ['', Validators.required],
@@ -251,6 +287,48 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         this.loading.set(false);
         this.toast.error(err?.error?.message ?? 'Failed to update profile.');
+      }
+    });
+  }
+
+  // ── Profile picture ─────────────────────────────────────────────
+  onPictureSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Client-side size check
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('File exceeds the 5 MB limit.');
+      return;
+    }
+
+    this.uploading.set(true);
+    this.auth.uploadProfilePicture(file).subscribe({
+      next: () => {
+        this.uploading.set(false);
+        this.toast.success('Profile picture updated!');
+      },
+      error: (err) => {
+        this.uploading.set(false);
+        this.toast.error(err?.error?.message ?? 'Failed to upload picture.');
+      }
+    });
+
+    // Clear the input so the same file can be re-selected
+    input.value = '';
+  }
+
+  deletePicture(): void {
+    this.uploading.set(true);
+    this.auth.deleteProfilePicture().subscribe({
+      next: () => {
+        this.uploading.set(false);
+        this.toast.success('Profile picture removed.');
+      },
+      error: () => {
+        this.uploading.set(false);
+        this.toast.error('Failed to remove picture.');
       }
     });
   }

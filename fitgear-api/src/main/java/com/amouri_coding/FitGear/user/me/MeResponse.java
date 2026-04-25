@@ -29,5 +29,6 @@ public class MeResponse {
     private String phoneNumber;
     private Integer yearsOfExperience;
     private Boolean isAvailable;
+    private String profilePicture;
 }
 

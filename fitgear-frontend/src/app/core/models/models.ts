@@ -13,6 +13,7 @@ export interface MeResponse {
   rating?: number; monthlyRate?: number;
   description?: string; phoneNumber?: string;
   yearsOfExperience?: number; isAvailable?: boolean;
+  profilePicture?: string;
 }
 
 export interface CoachSummary {

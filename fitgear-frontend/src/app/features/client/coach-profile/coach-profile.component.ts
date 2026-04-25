@@ -36,7 +36,11 @@ import { CoachDetailResponse, TestimonialResponse } from '../../../core/models/m
           <!-- ── Coach Header ──────────────────────────────────── -->
           <div class="card bg-gradient-to-r from-accent/15 via-card to-card border-accent/20">
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-accent/30 to-accent/10
+              <img *ngIf="coachPicUrl(c.profilePicture)"
+                   [src]="coachPicUrl(c.profilePicture)"
+                   alt="" class="w-20 h-20 rounded-full object-cover border-2 border-accent/30 flex-shrink-0">
+              <div *ngIf="!coachPicUrl(c.profilePicture)"
+                   class="w-20 h-20 rounded-full bg-gradient-to-br from-accent/30 to-accent/10
                           flex items-center justify-center text-accent text-3xl font-bold flex-shrink-0">
                 {{ c.fullName.split(' ')[0][0] }}{{ c.fullName.split(' ')[1]?.[0] ?? '' }}
               </div>
@@ -188,6 +192,11 @@ export class CoachProfileComponent implements OnInit {
   private fb    = inject(FormBuilder);
   private toast = inject(ToastService);
   Math = Math;
+
+  private readonly API_BASE = 'http://localhost:8080/api/v1';
+  coachPicUrl(filename?: string): string | null {
+    return filename ? `${this.API_BASE}/uploads/${filename}` : null;
+  }
 
   coach            = signal<CoachDetailResponse | null>(null);
   loading          = signal(true);

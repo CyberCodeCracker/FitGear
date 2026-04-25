@@ -3,6 +3,7 @@ package com.amouri_coding.FitGear.auth;
 import com.amouri_coding.FitGear.email.EmailService;
 import com.amouri_coding.FitGear.email.EmailTemplateName;
 import com.amouri_coding.FitGear.exception.InvalidTokenException;
+import com.amouri_coding.FitGear.file.FileStorageService;
 import com.amouri_coding.FitGear.role.UserRole;
 import com.amouri_coding.FitGear.role.UserRoleRepository;
 import com.amouri_coding.FitGear.security.*;
@@ -28,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -50,6 +52,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final ClientRepository clientRepository;
+    private final FileStorageService fileStorageService;
 
     @Value("${spring.application.security.jwt.access-expiration}")
     private long accessTokenExpiration;
@@ -81,7 +84,7 @@ public class AuthenticationService {
         return jwtService.generateRefreshToken(userDetails);
     }
 
-    public void registerCoach(CoachRegistrationRequest request, HttpServletResponse response) throws MessagingException {
+    public void registerCoach(CoachRegistrationRequest request, MultipartFile file, HttpServletResponse response) throws MessagingException {
         Optional<Coach> coachExists = coachRepository.findByEmail(request.getEmail());
 
         if (coachExists.isPresent()) {
@@ -100,6 +103,12 @@ public class AuthenticationService {
         claims.put("role", coachRole.getName());
         claims.put("fullName", fullName);
 
+        // Store profile picture if provided
+        String profilePicturePath = null;
+        if (file != null && !file.isEmpty()) {
+            profilePicturePath = fileStorageService.store(file, "profile-pictures");
+        }
+
         Coach coach = Coach.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -115,7 +124,8 @@ public class AuthenticationService {
                 .monthlyRate(request.getMonthlyRate())
                 .description(request.getDescription())
                 .phoneNumber(request.getPhoneNumber())
-                .yearsOfExperience(request.getYearsOfExperience())
+                .yearsOfExperience(request.getYearsOfExperience())
+                .profilePicture(profilePicturePath)
                 .build()
                 ;
 

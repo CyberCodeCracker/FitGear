@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.Map;
@@ -44,13 +46,14 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register/coach")
+    @PostMapping(value = "/register/coach", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> registerCoach(
-            @RequestBody @Valid CoachRegistrationRequest request,
+            @RequestPart("request") @Valid CoachRegistrationRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file,
             HttpServletResponse response
     ) throws MessagingException {
-        authService.registerCoach(request, response);
+        authService.registerCoach(request, file, response);
         return ResponseEntity.accepted().build();
     }
 

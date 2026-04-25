@@ -82,7 +82,11 @@ import { CoachCard } from '../../../core/models/models';
           <div *ngIf="!loading()" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             <div *ngFor="let coach of coaches()" class="card-hover group flex flex-col gap-4 animate-slide-up">
               <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/30 to-accent/10 flex items-center justify-center flex-shrink-0">
+                <img *ngIf="coachPicUrl(coach.profilePicture)"
+                     [src]="coachPicUrl(coach.profilePicture)"
+                     alt="" class="w-14 h-14 rounded-xl object-cover flex-shrink-0">
+                <div *ngIf="!coachPicUrl(coach.profilePicture)"
+                     class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/30 to-accent/10 flex items-center justify-center flex-shrink-0">
                   <i class="fa-solid fa-user-tie text-accent text-xl"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -159,6 +163,11 @@ export class CoachesComponent implements OnInit {
 
   query = '';
   private search$ = new Subject<string>();
+
+  private readonly API_BASE = 'http://localhost:8080/api/v1';
+  coachPicUrl(filename?: string): string | null {
+    return filename ? `${this.API_BASE}/uploads/${filename}` : null;
+  }
 
   ngOnInit(): void {
     this.search$.pipe(

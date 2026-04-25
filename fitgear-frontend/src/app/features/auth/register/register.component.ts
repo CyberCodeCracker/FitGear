@@ -157,6 +157,32 @@ function passwordsMatch(g: AbstractControl): ValidationErrors | null {
               </div>
 
               <div class="form-group">
+                <label class="form-label">Profile picture (optional, max 5 MB)</label>
+                <div class="flex items-center gap-4">
+                  <div class="relative group">
+                    <div *ngIf="!picturePreview"
+                         class="w-16 h-16 rounded-full bg-card-2 border-2 border-dashed border-white/10
+                                flex items-center justify-center cursor-pointer hover:border-accent/30 transition-colors">
+                      <i class="fa-solid fa-camera text-gray-500 group-hover:text-accent"></i>
+                    </div>
+                    <img *ngIf="picturePreview" [src]="picturePreview"
+                         class="w-16 h-16 rounded-full object-cover border-2 border-accent/30">
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                           class="absolute inset-0 opacity-0 cursor-pointer"
+                           (change)="onFileSelected($event)">
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm text-gray-400">{{ selectedFile ? selectedFile.name : 'No file selected' }}</p>
+                    <p class="text-xs text-gray-600">JPEG, PNG, WebP or GIF</p>
+                  </div>
+                  <button *ngIf="selectedFile" type="button" (click)="clearFile()"
+                          class="btn-icon text-danger hover:bg-danger/10">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
                 <label class="form-label">Bio / Description</label>
                 <textarea formControlName="description" rows="3" class="form-input resize-none" placeholder="Tell clients about yourself…"
                           [class.error]="cf['description'].invalid && cf['description'].touched"></textarea>
@@ -305,6 +331,8 @@ export class RegisterComponent {
   showPw  = false;
   success = false;
   registeredEmail = '';
+  selectedFile: File | null = null;
+  picturePreview: string | null = null;
 
   // ── Coach form ──────────────────────────────────────────────────────────
   coachForm = this.fb.group({
@@ -339,16 +367,34 @@ export class RegisterComponent {
     this.error = '';
   }
 
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { this.error = 'File exceeds 5 MB limit.'; return; }
+    this.selectedFile = file;
+    // Generate preview
+    const reader = new FileReader();
+    reader.onload = () => this.picturePreview = reader.result as string;
+    reader.readAsDataURL(file);
+  }
+
+  clearFile(): void {
+    this.selectedFile = null;
+    this.picturePreview = null;
+  }
+
   submitCoach(): void {
     if (this.coachForm.invalid) { this.coachForm.markAllAsTouched(); return; }
     this.loading = true; this.error = '';
     const v = this.coachForm.value;
+
     this.auth.registerCoach({
       firstName: v.firstName!, lastName: v.lastName!, email: v.email!,
       phoneNumber: v.phoneNumber!, description: v.description!,
       yearsOfExperience: Number(v.yearsOfExperience), monthlyRate: Number(v.monthlyRate),
       password: v.password!, passwordConfirm: v.passwordConfirm!
-    }).subscribe({
+    }, this.selectedFile).subscribe({
       next: () => { this.loading = false; this.registeredEmail = v.email!; this.success = true; },
       error: (err) => {
         this.loading = false;

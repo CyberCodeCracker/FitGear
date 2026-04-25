@@ -101,6 +101,7 @@ public class MeService {
                 .phoneNumber(coach.getPhoneNumber())
                 .yearsOfExperience(coach.getYearsOfExperience())
                 .isAvailable(coach.isAvailable())
+                .profilePicture(coach.getProfilePicture())
                 .build();
     }
 }

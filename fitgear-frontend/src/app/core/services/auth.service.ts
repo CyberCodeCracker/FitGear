@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, switchMap } from 'rxjs';
 import {
@@ -37,8 +37,13 @@ export class AuthService {
   }
 
   // ── Register ──────────────────────────────────────────────────────────────
-  registerCoach(payload: CoachRegistrationRequest): Observable<unknown> {
-    return this.http.post(`${API}/auth/register/coach`, payload, { observe: 'response' });
+  registerCoach(payload: CoachRegistrationRequest, file?: File | null): Observable<unknown> {
+    const formData = new FormData();
+    formData.append('request', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    if (file) {
+      formData.append('file', file);
+    }
+    return this.http.post(`${API}/auth/register/coach`, formData, { observe: 'response' });
   }
 
   registerClient(payload: ClientRegistrationRequest): Observable<unknown> {
@@ -55,7 +60,7 @@ export class AuthService {
     );
   }
 
-  // ── Update profile ─────────────────────────────────────────────────────────
+  // ── Update profile ────────────────────────────────────────────────────────
   updateProfile(payload: UpdateProfileRequest): Observable<MeResponse> {
     return this.http.put<MeResponse>(`${API}/me`, payload).pipe(
       tap(me => {
@@ -63,6 +68,41 @@ export class AuthService {
         this._user.set(me);
       })
     );
+  }
+
+  // ── Profile picture ───────────────────────────────────────────────────────
+  uploadProfilePicture(file: File): Observable<{ profilePicture: string }> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<{ profilePicture: string }>(`${API}/me/profile-picture`, fd).pipe(
+      tap(res => {
+        const u = this._user();
+        if (u) {
+          const updated = { ...u, profilePicture: res.profilePicture };
+          localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+          this._user.set(updated);
+        }
+      })
+    );
+  }
+
+  deleteProfilePicture(): Observable<void> {
+    return this.http.delete<void>(`${API}/me/profile-picture`).pipe(
+      tap(() => {
+        const u = this._user();
+        if (u) {
+          const updated = { ...u, profilePicture: null };
+          localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
+          this._user.set(updated as any);
+        }
+      })
+    );
+  }
+
+  /** Full URL for a profile picture relative path */
+  pictureUrl(relativePath: string | undefined | null): string | null {
+    if (!relativePath) return null;
+    return `${API}/uploads/${relativePath}`;
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────

@@ -196,7 +196,11 @@ import { TrainingProgramResponse, DietProgramResponse } from '../../../core/mode
 
           <!-- Coach card -->
           <div class="card flex items-center gap-4" *ngIf="auth.user()?.coach as coach">
-            <div class="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+            <img *ngIf="auth.pictureUrl(coach.profilePicture)"
+                 [src]="auth.pictureUrl(coach.profilePicture)"
+                 alt="" class="w-14 h-14 rounded-full object-cover border-2 border-accent/30 flex-shrink-0">
+            <div *ngIf="!auth.pictureUrl(coach.profilePicture)"
+                 class="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-user-tie text-accent text-xl"></i>
             </div>
             <div class="flex-1">
