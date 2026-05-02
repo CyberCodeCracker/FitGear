@@ -19,9 +19,7 @@ function passwordsMatch(g: AbstractControl): ValidationErrors | null {
     <div class="min-h-screen bg-bg flex">
 
       <!-- ── Left panel ─────────────────────────────────────────── -->
-      <div class="hidden lg:flex flex-col justify-between w-2/5 bg-card p-12 border-r border-white/5 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-5"
-             style="background: radial-gradient(circle at 20% 80%, #22C55E 0%, transparent 60%)"></div>
+      <div class="auth-visual-panel hidden lg:flex flex-col justify-between w-2/5 bg-card p-12 border-r border-white/5 relative overflow-hidden">
         <div class="relative">
           <div class="flex items-center gap-3 mb-16">
             <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
@@ -57,8 +55,8 @@ function passwordsMatch(g: AbstractControl): ValidationErrors | null {
       </div>
 
       <!-- ── Right panel ─────────────────────────────────────────── -->
-      <div class="flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto">
-        <div class="w-full max-w-lg animate-slide-up">
+      <div class="auth-form-panel flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto relative">
+        <div class="relative z-10 w-full max-w-lg animate-slide-up">
 
           <!-- Mobile logo -->
           <div class="flex items-center gap-2 mb-8 lg:hidden">
@@ -318,7 +316,33 @@ function passwordsMatch(g: AbstractControl): ValidationErrors | null {
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .auth-visual-panel,
+    .auth-form-panel {
+      background-image: linear-gradient(rgba(17, 24, 39, 0.78), rgba(17, 24, 39, 0.86)), url('/images/gym_bg.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .auth-form-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.82);
+      pointer-events: none;
+    }
+
+    @media (min-width: 1024px) {
+      .auth-form-panel {
+        background-image: none;
+      }
+
+      .auth-form-panel::before {
+        display: none;
+      }
+    }
+  `]
 })
 export class RegisterComponent {
   private fb   = inject(FormBuilder);

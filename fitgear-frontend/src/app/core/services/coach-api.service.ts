@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import {
   ClientResponse, PageResponse,
   TrainingProgramResponse, TrainingProgramRequest,
-  DietProgramResponse, DietProgramRequest
+  DietProgramResponse, DietProgramRequest,
+  ExerciseCatalogEntry
 } from '../models/models';
 
 const API = 'http://localhost:8080/api/v1';
@@ -48,5 +49,12 @@ export class CoachApiService {
   }
   deleteDietProgram(clientId: number, programId: number): Observable<void> {
     return this.http.delete<void>(`${API}/clients/${clientId}/nutrition/${programId}/delete-program`);
+  }
+
+  // ── Exercise Catalog ─────────────────────────────────────────────
+  searchExerciseCatalog(query: string): Observable<ExerciseCatalogEntry[]> {
+    return this.http.get<ExerciseCatalogEntry[]>(`${API}/exercises/catalog/search`, {
+      params: { q: query }
+    });
   }
 }

@@ -1,13 +1,15 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, FormArray, FormGroup, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { CoachApiService } from '../../../core/services/coach-api.service';
 import {
   ClientResponse, TrainingProgramResponse, DietProgramResponse,
-  TrainingProgramRequest, DietProgramRequest, TrainingDayResponse, DietDayResponse
+  TrainingProgramRequest, DietProgramRequest, TrainingDayResponse, DietDayResponse,
+  ExerciseCatalogEntry
 } from '../../../core/models/models';
 
 type Tab = 'overview' | 'training' | 'diet';
@@ -245,9 +247,24 @@ const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUN
                       <p class="text-xs text-gray-500 uppercase tracking-wider">Exercises</p>
                       <div *ngFor="let ex of getExercises(di).controls; let ei = index" [formGroupName]="ei"
                            class="grid grid-cols-12 gap-3 items-end p-3 rounded-lg bg-card-2/40 hover:bg-card-2/60 transition-colors">
-                        <div class="col-span-5 form-group mb-0">
+                        <div class="col-span-5 form-group mb-0 relative">
                           <label class="form-label">Exercise name</label>
-                          <input formControlName="title" class="form-input" placeholder="e.g. Bench Press">
+                          <input formControlName="title" class="form-input" placeholder="e.g. Bench Press" autocomplete="off"
+                                 (input)="onExerciseInput(di, ei, $event)"
+                                 (focus)="onExerciseInput(di, ei, $event)"
+                                 (blur)="hideAutocompleteDelayed()">
+                          <!-- Autocomplete dropdown -->
+                          <div *ngIf="activeAutocomplete() === di + '-' + ei && exerciseSuggestions().length"
+                               class="absolute z-30 left-0 right-0 top-full mt-1 bg-card border border-white/10
+                                      rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                            <button *ngFor="let s of exerciseSuggestions()" type="button"
+                                    (mousedown)="selectSuggestion(di, ei, s.name)"
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-accent/15 transition-colors
+                                           flex items-center justify-between">
+                              <span class="text-white">{{ s.name }}</span>
+                              <span class="text-xs text-gray-500">{{ s.muscleGroup }}</span>
+                            </button>
+                          </div>
                         </div>
                         <div class="col-span-2 form-group mb-0">
                           <label class="form-label">Sets</label>
@@ -383,19 +400,19 @@ const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUN
                       <p class="text-xs text-gray-500 uppercase tracking-wider w-full">Day totals</p>
                       <div class="form-group mb-0 w-28">
                         <label class="form-label">Total kcal</label>
-                        <input formControlName="totalCaloriesInDay" class="form-input" type="number" min="0" placeholder="2000">
+                        <input formControlName="totalCaloriesInDay" class="form-input" type="number" min="0" placeholder="2000" readonly>
                       </div>
                       <div class="form-group mb-0 w-28">
                         <label class="form-label">Protein (g)</label>
-                        <input formControlName="totalProteinInDay" class="form-input" type="number" min="0" placeholder="180">
+                        <input formControlName="totalProteinInDay" class="form-input" type="number" min="0" placeholder="180" readonly>
                       </div>
                       <div class="form-group mb-0 w-28">
                         <label class="form-label">Carbs (g)</label>
-                        <input formControlName="totalCarbsInDay" class="form-input" type="number" min="0" placeholder="220">
+                        <input formControlName="totalCarbsInDay" class="form-input" type="number" min="0" placeholder="220" readonly>
                       </div>
                       <div class="form-group mb-0 w-28">
                         <label class="form-label">Fats (g)</label>
-                        <input formControlName="totalFatsInDay" class="form-input" type="number" min="0" placeholder="70">
+                        <input formControlName="totalFatsInDay" class="form-input" type="number" min="0" placeholder="70" readonly>
                       </div>
                     </div>
                   </div>
@@ -424,6 +441,7 @@ export class ClientDetailComponent implements OnInit {
   private api   = inject(CoachApiService);
   private route = inject(ActivatedRoute);
   private fb    = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   client          = signal<ClientResponse | null>(null);
   training        = signal<TrainingProgramResponse | null>(null);
@@ -441,6 +459,11 @@ export class ClientDetailComponent implements OnInit {
   // Accordion state for overview tab
   expandedTraining = signal(new Set<number>());
   expandedDiet     = signal(new Set<number>());
+
+  // Exercise autocomplete state
+  exerciseSuggestions = signal<ExerciseCatalogEntry[]>([]);
+  activeAutocomplete  = signal<string | null>(null);
+  private autocompleteTimer: any;
 
   tabs = [
     { key: 'overview' as Tab, label: 'Overview',  icon: 'fa-gauge-high' },
@@ -488,6 +511,40 @@ export class ClientDetailComponent implements OnInit {
       next.has(index) ? next.delete(index) : next.add(index);
       return next;
     });
+  }
+
+  // ── Exercise autocomplete ─────────────────────────────────────────
+  onExerciseInput(di: number, ei: number, event: Event): void {
+    const value = (event.target as HTMLInputElement).value?.trim();
+    const key = `${di}-${ei}`;
+    this.activeAutocomplete.set(key);
+
+    clearTimeout(this.autocompleteTimer);
+    if (!value || value.length < 2) {
+      this.exerciseSuggestions.set([]);
+      return;
+    }
+    this.autocompleteTimer = setTimeout(() => {
+      this.api.searchExerciseCatalog(value).subscribe({
+        next: results => this.exerciseSuggestions.set(results.slice(0, 8)),
+        error: () => this.exerciseSuggestions.set([])
+      });
+    }, 250);
+  }
+
+  selectSuggestion(di: number, ei: number, name: string): void {
+    const exercises = this.getExercises(di);
+    const ctrl = exercises.at(ei) as FormGroup;
+    ctrl.get('title')?.setValue(name);
+    this.activeAutocomplete.set(null);
+    this.exerciseSuggestions.set([]);
+  }
+
+  hideAutocompleteDelayed(): void {
+    setTimeout(() => {
+      this.activeAutocomplete.set(null);
+      this.exerciseSuggestions.set([]);
+    }, 200);
   }
 
   // ── Load existing programs ────────────────────────────────────────
@@ -539,25 +596,7 @@ export class ClientDetailComponent implements OnInit {
   }
 
   private prefillDietForm(dp: DietProgramResponse): void {
-    const daysArray = this.fb.array(
-      dp.days.map(day => this.fb.group({
-        dayOfWeek:          [day.dayOfWeek, Validators.required],
-        totalCaloriesInDay: [day.totalCaloriesInDay, [Validators.required, Validators.min(0)]],
-        totalProteinInDay:  [day.totalProteinInDay,  [Validators.required, Validators.min(0)]],
-        totalCarbsInDay:    [day.totalCarbsInDay,    [Validators.required, Validators.min(0)]],
-        totalFatsInDay:     [day.totalFatsInDay,     [Validators.required, Validators.min(0)]],
-        meals: this.fb.array(
-          day.meals.map(m => this.fb.group({
-            description: [m.description, Validators.required],
-            calories:    [m.calories, [Validators.required, Validators.min(0)]],
-            protein:     [m.protein,  [Validators.required, Validators.min(0)]],
-            carbs:       [m.carbs,    [Validators.required, Validators.min(0)]],
-            fats:        [m.fats,     [Validators.required, Validators.min(0)]],
-            timeToEat:   [m.timeToEat ? m.timeToEat.substring(0,5) : ''],
-          }))
-        )
-      }))
-    );
+    const daysArray = this.fb.array(dp.days.map(day => this.createDietDayGroup(day)));
     this.dietForm.patchValue({ title: dp.title, description: dp.description });
     (this.dietForm as FormGroup).setControl('days', daysArray);
   }
@@ -592,28 +631,88 @@ export class ClientDetailComponent implements OnInit {
   removeExercise(di: number, ei: number): void { this.getExercises(di).removeAt(ei); }
 
   addDietDay(): void {
-    this.dietDaysArray.push(this.fb.group({
-      dayOfWeek:          ['MONDAY', Validators.required],
-      totalCaloriesInDay: [0, [Validators.required, Validators.min(0)]],
-      totalProteinInDay:  [0, [Validators.required, Validators.min(0)]],
-      totalCarbsInDay:    [0, [Validators.required, Validators.min(0)]],
-      totalFatsInDay:     [0, [Validators.required, Validators.min(0)]],
-      meals: this.fb.array([])
-    }));
+    this.dietDaysArray.push(this.createDietDayGroup());
   }
   removeDietDay(i: number): void { this.dietDaysArray.removeAt(i); }
 
   addMeal(di: number): void {
-    this.getDietMeals(di).push(this.fb.group({
-      description: ['', Validators.required],
-      calories:    [0, [Validators.required, Validators.min(0)]],
-      protein:     [0, [Validators.required, Validators.min(0)]],
-      carbs:       [0, [Validators.required, Validators.min(0)]],
-      fats:        [0, [Validators.required, Validators.min(0)]],
-      timeToEat:   [''],
-    }));
+    this.getDietMeals(di).push(this.createMealGroup());
+    this.updateDietDayTotals(di);
   }
-  removeMeal(di: number, mi: number): void { this.getDietMeals(di).removeAt(mi); }
+  removeMeal(di: number, mi: number): void {
+    this.getDietMeals(di).removeAt(mi);
+    this.updateDietDayTotals(di);
+  }
+
+  private createDietDayGroup(day?: DietDayResponse): FormGroup {
+    const group = this.fb.group({
+      dayOfWeek:          [day?.dayOfWeek ?? 'MONDAY', Validators.required],
+      totalCaloriesInDay: [0, [Validators.required, Validators.min(0)]],
+      totalProteinInDay:  [0, [Validators.required, Validators.min(0)]],
+      totalCarbsInDay:    [0, [Validators.required, Validators.min(0)]],
+      totalFatsInDay:     [0, [Validators.required, Validators.min(0)]],
+      meals: this.fb.array((day?.meals ?? []).map(meal => this.createMealGroup(meal)))
+    });
+
+    this.trackDietDayTotals(group);
+    this.updateDietDayTotalsForGroup(group);
+    return group;
+  }
+
+  private createMealGroup(meal?: DietDayResponse['meals'][number]): FormGroup {
+    return this.fb.group({
+      description: [meal?.description ?? '', Validators.required],
+      calories:    [meal?.calories ?? 0, [Validators.required, Validators.min(0)]],
+      protein:     [meal?.protein ?? 0,  [Validators.required, Validators.min(0)]],
+      carbs:       [meal?.carbs ?? 0,    [Validators.required, Validators.min(0)]],
+      fats:        [meal?.fats ?? 0,     [Validators.required, Validators.min(0)]],
+      timeToEat:   [meal?.timeToEat ? meal.timeToEat.substring(0,5) : ''],
+    });
+  }
+
+  private trackDietDayTotals(dayGroup: FormGroup): void {
+    const meals = dayGroup.get('meals') as FormArray;
+    meals.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateDietDayTotalsForGroup(dayGroup));
+  }
+
+  private updateDietDayTotals(di: number): void {
+    this.updateDietDayTotalsForGroup(this.dietDaysArray.at(di) as FormGroup);
+  }
+
+  private updateAllDietDayTotals(): void {
+    this.dietDaysArray.controls.forEach(dayCtrl => this.updateDietDayTotalsForGroup(dayCtrl as FormGroup));
+  }
+
+  private updateDietDayTotalsForGroup(dayGroup: FormGroup): void {
+    const meals = (dayGroup.get('meals') as FormArray).controls;
+    const totals = meals.reduce((sum, mealCtrl) => {
+      const meal = mealCtrl.value;
+      const calories = Number(meal.calories);
+      const protein = Number(meal.protein);
+      const carbs = Number(meal.carbs);
+      const fats = Number(meal.fats);
+
+      if ([calories, protein, carbs, fats].some(value => !Number.isFinite(value) || value <= 0)) {
+        return sum;
+      }
+
+      return {
+        calories: sum.calories + calories,
+        protein: sum.protein + protein,
+        carbs: sum.carbs + carbs,
+        fats: sum.fats + fats,
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+
+    dayGroup.patchValue({
+      totalCaloriesInDay: totals.calories,
+      totalProteinInDay: totals.protein,
+      totalCarbsInDay: totals.carbs,
+      totalFatsInDay: totals.fats,
+    }, { emitEvent: false });
+  }
 
   // ── Save training ─────────────────────────────────────────────────
   saveTraining(): void {
@@ -671,6 +770,7 @@ export class ClientDetailComponent implements OnInit {
   // ── Save diet ─────────────────────────────────────────────────────
   saveDiet(): void {
     if (this.dietForm.invalid) { this.dietForm.markAllAsTouched(); return; }
+    this.updateAllDietDayTotals();
     this.savingDiet.set(true);
 
     const fv = this.dietForm.value;

@@ -18,8 +18,6 @@ services:
   mail-dev:
     container_name: mail-dev-fg
     image: maildev/maildev:latest
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     ports:
       - 1025:1025
       - 1080:1080

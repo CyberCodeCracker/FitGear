@@ -88,6 +88,11 @@ export interface TrainingProgramResponse {
   trainingDays: TrainingDayResponse[];
 }
 
+// ─── Exercise Catalog (autocomplete) ───────────────────────────────
+export interface ExerciseCatalogEntry {
+  id: number; name: string; muscleGroup: string;
+}
+
 // ─── Training — request shapes ─────────────────────────────────────
 export interface ExerciseRequest {
   title: string; exerciseUrl?: string;
