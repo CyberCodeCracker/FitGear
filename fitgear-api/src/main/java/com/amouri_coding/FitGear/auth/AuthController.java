@@ -32,13 +32,12 @@ public class AuthController {
     private final ValidationAutoConfiguration validationAutoConfiguration;
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Map<String, String>> generateRefreshToken(
+    public ResponseEntity<?> generateRefreshToken(
             @RequestBody RefreshTokenRequest request
     ) {
         try {
-            String refreshToken = request.getRefreshToken();
-            authService.refreshToken(refreshToken);
-            return ResponseEntity.ok(Map.of("token", refreshToken));
+            AuthenticationResponse response = authService.refreshToken(request.getRefreshToken());
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         } catch (SecurityException e) {

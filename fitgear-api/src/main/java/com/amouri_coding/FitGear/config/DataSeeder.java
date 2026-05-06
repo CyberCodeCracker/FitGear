@@ -4,6 +4,8 @@ import com.amouri_coding.FitGear.role.UserRole;
 import com.amouri_coding.FitGear.role.UserRoleRepository;
 import com.amouri_coding.FitGear.training.catalog.ExerciseCatalog;
 import com.amouri_coding.FitGear.training.catalog.ExerciseCatalogRepository;
+import com.amouri_coding.FitGear.user.admin.Admin;
+import com.amouri_coding.FitGear.user.admin.AdminRepository;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.client.ClientRepository;
 import com.amouri_coding.FitGear.user.coach.Coach;
@@ -23,15 +25,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DataSeeder implements ApplicationRunner {
 
-    private final UserRoleRepository roleRepository;
-    private final CoachRepository    coachRepository;
-    private final ClientRepository   clientRepository;
-    private final PasswordEncoder    passwordEncoder;
+    private final UserRoleRepository        roleRepository;
+    private final CoachRepository           coachRepository;
+    private final ClientRepository          clientRepository;
+    private final AdminRepository           adminRepository;
+    private final PasswordEncoder           passwordEncoder;
     private final ExerciseCatalogRepository exerciseCatalogRepository;
 
     @Override
     public void run(ApplicationArguments args) {
         seedRoles();
+        seedAdmin();
         seedCoaches();
         seedClients();
         seedExerciseCatalog();
@@ -47,6 +51,32 @@ public class DataSeeder implements ApplicationRunner {
             roleRepository.save(UserRole.builder().name("CLIENT").build());
             log.info("DataSeeder: seeded role CLIENT");
         }
+        if (roleRepository.findByName("ADMIN").isEmpty()) {
+            roleRepository.save(UserRole.builder().name("ADMIN").build());
+            log.info("DataSeeder: seeded role ADMIN");
+        }
+    }
+
+    // ── Admin ─────────────────────────────────────────────────────────────────
+    private void seedAdmin() {
+        if (adminRepository.findByEmail("admin@fitgear.com").isPresent()) return;
+
+        UserRole adminRole = roleRepository.findByName("ADMIN")
+                .orElseThrow(() -> new IllegalStateException("ADMIN role not found"));
+
+        Admin admin = Admin.builder()
+                .firstName("Super")
+                .lastName("Admin")
+                .email("admin@fitgear.com")
+                .password(passwordEncoder.encode("Admin1234!"))
+                .accountEnabled(true)
+                .accountLocked(false)
+                .createdAt(LocalDateTime.now())
+                .roles(List.of(adminRole))
+                .build();
+
+        adminRepository.save(admin);
+        log.info("DataSeeder: seeded admin admin@fitgear.com");
     }
 
     // ── Coaches ──────────────────────────────────────────────────────────────

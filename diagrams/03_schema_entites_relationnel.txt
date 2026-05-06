@@ -1,0 +1,264 @@
+@startuml Schema_Entites_Relationnel_FitGear
+
+skinparam backgroundColor #1a1a2e
+skinparam entity {
+  BackgroundColor #16213e
+  BorderColor #0f3460
+  FontColor #e0e0e0
+  HeaderBackgroundColor #0f3460
+}
+skinparam arrow {
+  Color #a0a0c0
+}
+skinparam note {
+  BackgroundColor #0f3460
+  BorderColor #533483
+  FontColor #e0e0e0
+}
+
+title Schéma Entités-Relationnel — Application FitGear
+
+' ─── Entité centrale : _utilisateur ───────────────────────────────
+
+entity "_utilisateur" as USER {
+  * **id_utilisateur** : BIGSERIAL <<PK>>
+  --
+  prénom              : VARCHAR NOT NULL
+  nom                 : VARCHAR NOT NULL
+  email               : VARCHAR UNIQUE NOT NULL
+  mot_de_passe        : VARCHAR NOT NULL
+  créé_à              : TIMESTAMP NOT NULL
+  compte_bloqué       : BOOLEAN NOT NULL
+  compte_actif        : BOOLEAN NOT NULL
+  dtype               : VARCHAR NOT NULL
+}
+
+note right of USER
+  Colonne discriminante :
+  dtype = 'CLIENT' | 'COACH' | 'ADMIN'
+  Héritage JOINED (JPA)
+end note
+
+' ─── Tables héritées ──────────────────────────────────────────────
+
+entity "client" as CLIENT {
+  * **id_utilisateur** : BIGINT <<PK, FK→_utilisateur>>
+  --
+  taille                   : DOUBLE NOT NULL
+  poids                    : DOUBLE NOT NULL
+  pourcentage_masse_graisse : DOUBLE NOT NULL
+  id_coach                 : BIGINT <<FK→coach>>
+  id_programme_entrainement : BIGINT <<FK→programme_entrainement>>
+  id_programme_nutritionnel : BIGINT <<FK→programme_nutritionnel>>
+}
+
+entity "coach" as COACH {
+  * **id_utilisateur** : BIGINT <<PK, FK→_utilisateur>>
+  --
+  description         : TEXT
+  années_expérience   : INT
+  tarif_mensuel       : DOUBLE
+  numéro_téléphone    : VARCHAR
+  disponible          : BOOLEAN
+  photo_profil        : VARCHAR
+  vérifié             : BOOLEAN
+  note                : DOUBLE
+}
+
+entity "admin" as ADMIN {
+  * **id_utilisateur** : BIGINT <<PK, FK→_utilisateur>>
+}
+
+USER ||--|| CLIENT : "spécialise"
+USER ||--|| COACH  : "spécialise"
+USER ||--|| ADMIN  : "spécialise"
+CLIENT }o--|| COACH : "abonné à"
+
+' ─── Rôles ────────────────────────────────────────────────────────
+
+entity "role_utilisateur" as ROLE {
+  * **id_role** : INT <<PK>>
+  --
+  nom        : VARCHAR NOT NULL
+  créé_à     : TIMESTAMP
+  modifié_à  : TIMESTAMP
+}
+
+entity "_utilisateur_roles" as USER_ROLE {
+  * **id_utilisateur** : BIGINT <<FK→_utilisateur>>
+  * **id_role**        : INT    <<FK→role_utilisateur>>
+}
+
+USER    ||--|{ USER_ROLE  : ""
+ROLE    ||--|{ USER_ROLE  : ""
+
+' ─── Jetons de sécurité ───────────────────────────────────────────
+
+entity "jeton" as TOKEN {
+  * **id_jeton**      : BIGINT <<PK>>
+  --
+  id_utilisateur : BIGINT <<FK→_utilisateur>>
+  jeton          : VARCHAR NOT NULL
+  type_jeton     : VARCHAR NOT NULL
+  révoqué        : BOOLEAN NOT NULL
+  expiré         : BOOLEAN NOT NULL
+}
+
+USER ||--|{ TOKEN : "possède"
+
+' ─── Spécialités & Certifications ────────────────────────────────
+
+entity "spécialité" as SPECIALTY {
+  * **id_spécialité** : BIGINT <<PK>>
+  --
+  intitulé : VARCHAR NOT NULL
+}
+
+entity "certification" as CERT {
+  * **id_certification** : BIGINT <<PK>>
+  --
+  intitulé : VARCHAR NOT NULL
+}
+
+entity "coach_spécialités" as COACH_SPEC {
+  * **id_coach**       : BIGINT <<FK→coach>>
+  * **id_spécialité**  : BIGINT <<FK→spécialité>>
+}
+
+entity "coach_certifications" as COACH_CERT {
+  * **id_coach**         : BIGINT <<FK→coach>>
+  * **id_certification** : BIGINT <<FK→certification>>
+}
+
+COACH    ||--|{ COACH_SPEC  : ""
+SPECIALTY||--|{ COACH_SPEC  : ""
+COACH    ||--|{ COACH_CERT  : ""
+CERT     ||--|{ COACH_CERT  : ""
+
+' ─── Programme d'Entraînement ─────────────────────────────────────
+
+entity "programme_entrainement" as TP {
+  * **id_programme** : BIGINT <<PK>>
+  --
+  id_coach  : BIGINT <<FK→coach>>
+  id_client : BIGINT <<FK→client>>
+}
+
+entity "jour_entrainement" as TD {
+  * **id_jour** : BIGINT <<PK>>
+  --
+  id_programme                : BIGINT <<FK→programme_entrainement>>
+  titre                       : VARCHAR NOT NULL
+  jour_semaine                : VARCHAR NOT NULL
+  calories_brûlées_estimées   : INT
+}
+
+entity "exercice" as EX {
+  * **id_exercice** : BIGINT <<PK>>
+  --
+  id_jour           : BIGINT <<FK→jour_entrainement>>
+  titre             : VARCHAR NOT NULL
+  url_exercice      : VARCHAR
+  numéro_exercice   : INT
+  temps_repos       : INT
+  nombre_séries     : INT
+  nombre_répétitions : INT
+}
+
+COACH  ||--|{ TP : "crée"
+CLIENT ||--o| TP : "suit"
+TP     ||--|{ TD : "composé de"
+TD     ||--|{ EX : "contient"
+
+' ─── Programme Nutritionnel ───────────────────────────────────────
+
+entity "programme_nutritionnel" as DP {
+  * **id_programme** : BIGINT <<PK>>
+  --
+  id_coach    : BIGINT <<FK→coach>>
+  id_client   : BIGINT <<FK→client>>
+  titre       : VARCHAR NOT NULL
+  description : TEXT
+}
+
+entity "jour_nutritionnel" as DD {
+  * **id_jour** : BIGINT <<PK>>
+  --
+  id_programme          : BIGINT <<FK→programme_nutritionnel>>
+  jour_semaine          : VARCHAR NOT NULL
+  total_calories_jour   : DOUBLE
+  total_protéines_jour  : DOUBLE
+  total_glucides_jour   : DOUBLE
+  total_lipides_jour    : DOUBLE
+}
+
+entity "repas" as MEAL {
+  * **id_repas** : BIGINT <<PK>>
+  --
+  id_jour       : BIGINT <<FK→jour_nutritionnel>>
+  description   : VARCHAR NOT NULL
+  calories      : DOUBLE
+  protéines     : DOUBLE
+  glucides      : DOUBLE
+  lipides       : DOUBLE
+  heure_repas   : TIME
+}
+
+COACH ||--|{ DP   : "crée"
+CLIENT||--o| DP   : "suit"
+DP    ||--|{ DD   : "composé de"
+DD    ||--|{ MEAL : "contient"
+
+' ─── Catalogue d'Exercices ────────────────────────────────────────
+
+entity "catalogue_exercice" as CAT {
+  * **id_exercice** : BIGINT <<PK>>
+  --
+  nom               : VARCHAR NOT NULL
+  groupe_musculaire : VARCHAR NOT NULL
+}
+
+' ─── Performance & Progression ────────────────────────────────────
+
+entity "performance_exercice" as PERF {
+  * **id_performance** : BIGINT <<PK>>
+  --
+  id_client    : BIGINT <<FK→client>>
+  id_exercice  : BIGINT <<FK→exercice>>
+  séries       : INT
+  répétitions  : INT
+  poids_utilisé : DOUBLE
+  date         : DATE
+}
+
+entity "entrée_progression" as PROG {
+  * **id_progression** : BIGINT <<PK>>
+  --
+  id_client           : BIGINT <<FK→client>>
+  date_entrée         : DATE NOT NULL
+  poids               : DOUBLE NOT NULL
+  masse_graisse       : DOUBLE NOT NULL
+  masse_musculaire    : DOUBLE
+  notes               : TEXT
+  créé_à              : TIMESTAMP
+}
+
+CLIENT ||--|{ PERF : "enregistre"
+CLIENT ||--|{ PROG : "suit"
+
+' ─── Témoignages ──────────────────────────────────────────────────
+
+entity "témoignage" as TESTI {
+  * **id_témoignage** : BIGINT <<PK>>
+  --
+  id_client    : BIGINT <<FK→client>>
+  id_coach     : BIGINT <<FK→coach>>
+  note         : INT NOT NULL
+  commentaire  : TEXT
+  créé_à       : TIMESTAMP
+}
+
+CLIENT ||--|{ TESTI : "rédige"
+COACH  ||--|{ TESTI : "reçoit"
+
+@enduml

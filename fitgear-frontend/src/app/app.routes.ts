@@ -51,5 +51,17 @@ export const routes: Routes = [
     ],
   },
 
+  // ── Admin (role: ADMIN) ────────────────────────────────────────
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    children: [
+      { path: 'dashboard', loadComponent: () => import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
+      { path: 'users',     loadComponent: () => import('./features/admin/users/admin-users.component').then(m => m.AdminUsersComponent) },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+
   { path: '**', redirectTo: 'auth/login' },
 ];

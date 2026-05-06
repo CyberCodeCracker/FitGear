@@ -47,10 +47,11 @@
 
   /* ── Badges ── */
   .badge { @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium; }
-  .badge-green { @apply badge bg-accent/15 text-accent; }
-  .badge-blue { @apply badge bg-info/15 text-info; }
+  .badge-green  { @apply badge bg-accent/15 text-accent; }
+  .badge-blue   { @apply badge bg-info/15 text-info; }
   .badge-yellow { @apply badge bg-warning/15 text-warning; }
-  .badge-red { @apply badge bg-danger/15 text-danger; }
+  .badge-red    { @apply badge bg-danger/15 text-danger; }
+  .badge-purple { @apply badge bg-violet-500/15 text-violet-400; }
 
   /* ── Stat card ── */
   .stat-card { @apply card flex flex-col gap-2; }

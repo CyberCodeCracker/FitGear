@@ -2,6 +2,7 @@ package com.amouri_coding.FitGear.user.me;
 
 import com.amouri_coding.FitGear.file.FileStorageService;
 import com.amouri_coding.FitGear.user.User;
+import com.amouri_coding.FitGear.user.admin.Admin;
 import com.amouri_coding.FitGear.user.client.Client;
 import com.amouri_coding.FitGear.user.coach.Coach;
 import com.amouri_coding.FitGear.user.coach.CoachRepository;
@@ -80,6 +81,15 @@ public class MeController {
                     .yearsOfExperience(coach.getYearsOfExperience())
                     .isAvailable(coach.isAvailable())
                     .profilePicture(coach.getProfilePicture())
+                    .build());
+        } else if (user instanceof Admin) {
+            return ResponseEntity.ok(MeResponse.builder()
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    .roles(roles)
+                    .userType("ADMIN")
                     .build());
         }
 

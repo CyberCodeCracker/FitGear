@@ -29,9 +29,15 @@ interface NavLink { label: string; icon: string; route: string; }
 
       <!-- Role badge -->
       <div class="px-3 py-3 border-b border-white/5" *ngIf="!collapsed">
-        <span class="badge" [class.badge-green]="auth.isCoach()" [class.badge-blue]="auth.isClient()">
-          <i class="fa-solid" [class.fa-shield-halved]="auth.isCoach()" [class.fa-user]="auth.isClient()"></i>
-          {{ auth.isCoach() ? 'Coach Portal' : 'Client Portal' }}
+        <span class="badge"
+              [class.badge-green]="auth.isCoach()"
+              [class.badge-blue]="auth.isClient()"
+              [class.badge-purple]="auth.isAdmin()">
+          <i class="fa-solid"
+             [class.fa-shield-halved]="auth.isCoach()"
+             [class.fa-user]="auth.isClient()"
+             [class.fa-user-shield]="auth.isAdmin()"></i>
+          {{ auth.isAdmin() ? 'Admin Portal' : auth.isCoach() ? 'Coach Portal' : 'Client Portal' }}
         </span>
       </div>
 
@@ -89,11 +95,16 @@ export class SidebarComponent implements OnInit {
   currentRoute = '';
 
   get links(): NavLink[] {
-    return this.auth.isCoach() ? [
-      { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/coach/dashboard'  },
-      { label: 'My Clients',  icon: 'fa-users',        route: '/coach/clients'    },
-      { label: 'Profile',     icon: 'fa-user-pen',     route: '/profile'          },
-    ] : [
+    if (this.auth.isAdmin()) return [
+      { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/admin/dashboard' },
+      { label: 'Users',       icon: 'fa-users-gear',   route: '/admin/users'     },
+    ];
+    if (this.auth.isCoach()) return [
+      { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/coach/dashboard' },
+      { label: 'My Clients',  icon: 'fa-users',        route: '/coach/clients'   },
+      { label: 'Profile',     icon: 'fa-user-pen',     route: '/profile'         },
+    ];
+    return [
       { label: 'Dashboard',   icon: 'fa-gauge-high',   route: '/client/dashboard' },
       { label: 'Coaches',     icon: 'fa-medal',        route: '/client/coaches'   },
       { label: 'Progress',    icon: 'fa-chart-line',   route: '/client/progress'  },

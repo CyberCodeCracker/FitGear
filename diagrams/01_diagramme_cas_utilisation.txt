@@ -1,0 +1,137 @@
+@startuml Diagramme_Cas_Utilisation_FitGear
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam backgroundColor #1a1a2e
+skinparam actor {
+  BackgroundColor #16213e
+  BorderColor #0f3460
+  FontColor #e0e0e0
+}
+skinparam usecase {
+  BackgroundColor #16213e
+  BorderColor #0f3460
+  FontColor #e0e0e0
+}
+skinparam note {
+  BackgroundColor #0f3460
+  BorderColor #533483
+  FontColor #e0e0e0
+}
+
+title Diagramme de Cas d'Utilisation — Application FitGear
+
+' ─── Acteurs ───────────────────────────────────────────────────────
+actor "Visiteur"      as Visiteur
+actor "Client"        as Client
+actor "Coach"         as Coach
+actor "Administrateur" as Admin
+
+Client  -|> Visiteur
+Coach   -|> Visiteur
+
+' ─── Authentification ─────────────────────────────────────────────
+package "Authentification" {
+  usecase "S'inscrire (Client)"    as UC_InscriptionClient
+  usecase "S'inscrire (Coach)"     as UC_InscriptionCoach
+  usecase "Se connecter"           as UC_Connexion
+  usecase "Activer son compte\n(email de vérification)" as UC_Activation
+  usecase "Se déconnecter"         as UC_Deconnexion
+  usecase "Rafraîchir le token"    as UC_Refresh
+}
+
+Visiteur --> UC_InscriptionClient
+Visiteur --> UC_InscriptionCoach
+Visiteur --> UC_Connexion
+Visiteur --> UC_Activation
+Client   --> UC_Deconnexion
+Coach    --> UC_Deconnexion
+UC_InscriptionClient ..> UC_Activation : <<include>>
+
+' ─── Gestion du profil ────────────────────────────────────────────
+package "Gestion du profil" {
+  usecase "Consulter son profil"         as UC_VoirProfil
+  usecase "Modifier son profil"          as UC_ModifierProfil
+  usecase "Téléverser une photo\nde profil (Coach)" as UC_Photo
+  usecase "Supprimer la photo\nde profil (Coach)"   as UC_SupprimerPhoto
+}
+
+Client --> UC_VoirProfil
+Client --> UC_ModifierProfil
+Coach  --> UC_VoirProfil
+Coach  --> UC_ModifierProfil
+Coach  --> UC_Photo
+Coach  --> UC_SupprimerPhoto
+
+' ─── Espace Client ────────────────────────────────────────────────
+package "Espace Client" {
+  usecase "Parcourir les coachs\ndisponibles"          as UC_ParcoururCoachs
+  usecase "Consulter le profil\nd'un coach"            as UC_ProfilCoach
+  usecase "S'abonner à un coach"                       as UC_Abonnement
+  usecase "Se désabonner"                              as UC_Desabonnement
+  usecase "Laisser un témoignage\nsur le coach"        as UC_Temoignage
+  usecase "Consulter son programme\nd'entraînement"    as UC_VoirTraining
+  usecase "Consulter son programme\nnutritionnel"      as UC_VoirNutrition
+  usecase "Suivre ses performances\n(exercices)"       as UC_Performance
+  usecase "Enregistrer une entrée\nde progression"     as UC_Progression
+  usecase "Consulter l'historique\nde progression"     as UC_HistoriqueProgression
+}
+
+Client --> UC_ParcoururCoachs
+Client --> UC_ProfilCoach
+Client --> UC_Abonnement
+Client --> UC_Desabonnement
+Client --> UC_Temoignage
+Client --> UC_VoirTraining
+Client --> UC_VoirNutrition
+Client --> UC_Performance
+Client --> UC_Progression
+Client --> UC_HistoriqueProgression
+UC_Abonnement ..> UC_Desabonnement : <<extend>>
+
+' ─── Espace Coach ─────────────────────────────────────────────────
+package "Espace Coach" {
+  usecase "Consulter la liste\nde ses clients"          as UC_ListeClients
+  usecase "Consulter le détail\nd'un client"            as UC_DetailClient
+  usecase "Créer un programme\nd'entraînement"          as UC_CreerTraining
+  usecase "Modifier un programme\nd'entraînement"       as UC_ModifierTraining
+  usecase "Supprimer un programme\nd'entraînement"      as UC_SupprimerTraining
+  usecase "Créer un programme\nnutritionnel"            as UC_CreerNutrition
+  usecase "Modifier un programme\nnutritionnel"         as UC_ModifierNutrition
+  usecase "Supprimer un programme\nnutritionnel"        as UC_SupprimerNutrition
+  usecase "Affecter un programme\nà un client"          as UC_AffecterProg
+  usecase "Consulter le catalogue\nd'exercices"         as UC_Catalogue
+}
+
+Coach --> UC_ListeClients
+Coach --> UC_DetailClient
+Coach --> UC_CreerTraining
+Coach --> UC_ModifierTraining
+Coach --> UC_SupprimerTraining
+Coach --> UC_CreerNutrition
+Coach --> UC_ModifierNutrition
+Coach --> UC_SupprimerNutrition
+Coach --> UC_AffecterProg
+Coach --> UC_Catalogue
+UC_CreerTraining  ..> UC_AffecterProg : <<extend>>
+UC_CreerNutrition ..> UC_AffecterProg : <<extend>>
+
+' ─── Espace Administrateur ────────────────────────────────────────
+package "Espace Administrateur" {
+  usecase "Consulter le tableau\nde bord (statistiques)"  as UC_Dashboard
+  usecase "Lister tous les utilisateurs"                  as UC_ListerUsers
+  usecase "Filtrer les utilisateurs\n(rôle, recherche)"   as UC_FiltrerUsers
+  usecase "Verrouiller / déverrouiller\nun compte"        as UC_Verrou
+  usecase "Activer / désactiver\nun compte"               as UC_Activer
+  usecase "Supprimer un utilisateur"                      as UC_SupprimerUser
+}
+
+Admin --> UC_Dashboard
+Admin --> UC_ListerUsers
+Admin --> UC_FiltrerUsers
+Admin --> UC_Verrou
+Admin --> UC_Activer
+Admin --> UC_SupprimerUser
+UC_ListerUsers ..> UC_FiltrerUsers : <<include>>
+
+@enduml

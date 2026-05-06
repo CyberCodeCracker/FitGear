@@ -69,7 +69,7 @@ public class AuthenticationService {
     @Value("${spring.application.security.jwt.invitation-expiration}")
     private long invitationTokenExpiration;
 
-    public String refreshToken(String refreshToken) {
+    public AuthenticationResponse refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
             throw new IllegalArgumentException("Refresh token is missing");
         }
@@ -78,10 +78,29 @@ public class AuthenticationService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
         if (!jwtService.isTokenValid(refreshToken, userDetails)) {
-            throw new SecurityException("Invalid refresh token");
+            throw new SecurityException("Invalid or expired refresh token");
         }
 
-        return jwtService.generateRefreshToken(userDetails);
+        User user = (User) userDetails;
+        Map<String, Object> claims = new HashMap<>();
+        if (user.getRoles().stream().anyMatch(r -> "ADMIN".equals(r.getName()))) {
+            claims.put("role", "ROLE_ADMIN");
+        } else if (user.getRoles().stream().anyMatch(r -> "COACH".equals(r.getName()))) {
+            claims.put("role", "ROLE_COACH");
+        } else if (user.getRoles().stream().anyMatch(r -> "CLIENT".equals(r.getName()))) {
+            claims.put("role", "ROLE_CLIENT");
+        } else {
+            throw new IllegalStateException("User role not recognized");
+        }
+        claims.put("fullName", user.getName());
+
+        String newAccessToken  = jwtService.generateAccessToken(claims, user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 
     public void registerCoach(CoachRegistrationRequest request, MultipartFile file, HttpServletResponse response) throws MessagingException {
@@ -124,7 +143,7 @@ public class AuthenticationService {
                 .monthlyRate(request.getMonthlyRate())
                 .description(request.getDescription())
                 .phoneNumber(request.getPhoneNumber())
-                .yearsOfExperience(request.getYearsOfExperience())
+                .yearsOfExperience(request.getYearsOfExperience())
                 .profilePicture(profilePicturePath)
                 .build()
                 ;
@@ -281,7 +300,9 @@ public class AuthenticationService {
 
         Map<String, Object> claims = new HashMap<>();
         var user = (User) auth.getPrincipal();
-        if (user.getRoles().stream().anyMatch(userRole -> "COACH".equals(userRole.getName()))) {
+        if (user.getRoles().stream().anyMatch(userRole -> "ADMIN".equals(userRole.getName()))) {
+            claims.put("role", "ROLE_ADMIN");
+        } else if (user.getRoles().stream().anyMatch(userRole -> "COACH".equals(userRole.getName()))) {
             claims.put("role", "ROLE_COACH");
         } else if (user.getRoles().stream().anyMatch(userRole -> "CLIENT".equals(userRole.getName()))) {
             claims.put("role", "ROLE_CLIENT");

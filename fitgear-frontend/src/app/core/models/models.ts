@@ -5,7 +5,7 @@ export interface AuthResponse { token: string; refreshToken?: string; }
 export interface MeResponse {
   id: number; firstName: string; lastName: string;
   email: string; roles: string[];
-  userType: 'CLIENT' | 'COACH' | 'UNKNOWN';
+  userType: 'CLIENT' | 'COACH' | 'ADMIN' | 'UNKNOWN';
   coach?: CoachSummary | null;
   // Client-only
   height?: number; weight?: number; bodyFatPercentage?: number;
@@ -178,4 +178,27 @@ export interface PageResponse<T> {
   content: T[]; number: number; size: number;
   totalElements: number; totalPages: number;
   first: boolean; last: boolean;
+}
+
+// ─── Admin ─────────────────────────────────────────────────────────
+export interface AdminDashboardResponse {
+  totalClients: number;
+  totalCoaches: number;
+  clientsWithCoach: number;
+  clientsWithTrainingProgram: number;
+  clientsWithDietProgram: number;
+  totalTrainingPrograms: number;
+  totalDietPrograms: number;
+}
+
+export interface AdminUserResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  userType: string;
+  roles: string[];
+  accountEnabled: boolean;
+  accountLocked: boolean;
+  createdAt: string;
 }

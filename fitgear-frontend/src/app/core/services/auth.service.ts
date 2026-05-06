@@ -24,6 +24,7 @@ export class AuthService {
   readonly isLoggedIn = computed(() => !!this._user());
   readonly isCoach    = computed(() => this._user()?.userType === 'COACH');
   readonly isClient   = computed(() => this._user()?.userType === 'CLIENT');
+  readonly isAdmin    = computed(() => this._user()?.userType === 'ADMIN');
 
   // ── Login ─────────────────────────────────────────────────────────────────
   login(email: string, password: string): Observable<MeResponse> {

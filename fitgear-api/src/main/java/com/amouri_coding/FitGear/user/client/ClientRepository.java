@@ -52,4 +52,13 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     @EntityGraph(attributePaths = { "trainingProgram", "dietProgram" })
     @Query("SELECT c FROM Client c WHERE c.id = :clientId")
     Optional<Client> findWithProgramsById(Long clientId);
+
+    @Query("SELECT COUNT(c) FROM Client c WHERE c.trainingProgram IS NOT NULL")
+    long countWithTrainingProgram();
+
+    @Query("SELECT COUNT(c) FROM Client c WHERE c.dietProgram IS NOT NULL")
+    long countWithDietProgram();
+
+    @Query("SELECT COUNT(c) FROM Client c WHERE c.coach IS NOT NULL")
+    long countWithCoach();
 }

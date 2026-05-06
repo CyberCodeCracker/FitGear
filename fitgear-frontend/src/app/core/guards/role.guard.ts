@@ -16,7 +16,9 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   if (expected.length === 0 || expected.includes(userType)) return true;
 
   // Redirect to role-appropriate home
-  const dest = auth.isCoach() ? '/coach/dashboard' : '/client/dashboard';
+  let dest = '/client/dashboard';
+  if (auth.isAdmin())  dest = '/admin/dashboard';
+  else if (auth.isCoach()) dest = '/coach/dashboard';
   router.navigate([dest]);
   return false;
 };

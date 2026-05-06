@@ -1,0 +1,220 @@
+@startuml Diagramme_Classes_FitGear
+
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #1a1a2e
+skinparam class {
+  BackgroundColor #16213e
+  BorderColor #0f3460
+  FontColor #e0e0e0
+  HeaderBackgroundColor #0f3460
+}
+skinparam arrow {
+  Color #a0a0c0
+}
+skinparam note {
+  BackgroundColor #0f3460
+  BorderColor #533483
+  FontColor #e0e0e0
+}
+
+title Diagramme de Classes — Application FitGear
+
+' ─── Rôles & Jetons ───────────────────────────────────────────────
+
+class RôleUtilisateur {
+  - id : Integer
+  - nom : String
+  - créeÀ : LocalDateTime
+  - modifiéÀ : LocalDateTime
+}
+
+class Jeton {
+  - id : Long
+  - jeton : String
+  - typeJeton : TypeJeton
+  - révoqué : boolean
+  - expiré : boolean
+}
+
+enum TypeJeton {
+  BEARER
+}
+
+Jeton --> TypeJeton
+
+' ─── Hiérarchie Utilisateur ───────────────────────────────────────
+
+abstract class Utilisateur {
+  - id : Long
+  - prénom : String
+  - nom : String
+  - email : String
+  - motDePasse : String
+  - créeÀ : LocalDateTime
+  - compteBloqueé : boolean
+  - compteActif : boolean
+  + getAuthorities() : Collection
+  + getUsername() : String
+  + isAccountNonLocked() : boolean
+  + isEnabled() : boolean
+}
+
+class Client {
+  - taille : double
+  - poids : double
+  - pourcentageMasseGraisse : double
+}
+
+class Coach {
+  - description : String
+  - annéesExpérience : int
+  - tarifMensuel : double
+  - numéroTéléphone : String
+  - disponible : boolean
+  - photoProfil : String
+  - vérifié : boolean
+  - note : double
+}
+
+class Administrateur {
+}
+
+Utilisateur <|-- Client
+Utilisateur <|-- Coach
+Utilisateur <|-- Administrateur
+
+Utilisateur "1" --> "0..*" RôleUtilisateur : possède
+Utilisateur "1" --> "0..*" Jeton           : détient
+Client      "0..*" --> "0..1" Coach        : abonné à
+
+' ─── Spécialités & Certifications ────────────────────────────────
+
+class Spécialité {
+  - id : Long
+  - intitulé : String
+}
+
+class Certification {
+  - id : Long
+  - intitulé : String
+}
+
+Coach "0..*" --> "0..*" Spécialité    : possède
+Coach "0..*" --> "0..*" Certification : détient
+
+' ─── Programme d'Entraînement ─────────────────────────────────────
+
+class ProgrammeEntraînement {
+  - id : Long
+}
+
+class JourEntraînement {
+  - id : Long
+  - titre : String
+  - jourSemaine : JourSemaine
+  - caloriesBrûléesEstimées : int
+}
+
+class Exercice {
+  - id : Long
+  - titre : String
+  - urlExercice : String
+  - numéroExercice : int
+  - tempsRepos : int
+  - nombreSéries : int
+  - nombreRépétitions : int
+}
+
+enum JourSemaine {
+  LUNDI
+  MARDI
+  MERCREDI
+  JEUDI
+  VENDREDI
+  SAMEDI
+  DIMANCHE
+}
+
+JourEntraînement --> JourSemaine
+
+Coach               "1"    --> "0..*" ProgrammeEntraînement : crée
+Client              "1"    --> "0..1" ProgrammeEntraînement  : suit
+ProgrammeEntraînement "1"  --> "0..*" JourEntraînement       : composé de
+JourEntraînement      "1"  --> "0..*" Exercice               : contient
+
+' ─── Programme Nutritionnel ───────────────────────────────────────
+
+class ProgrammeNutritionnel {
+  - id : Long
+  - titre : String
+  - description : String
+}
+
+class JourNutritionnel {
+  - id : Long
+  - jourSemaine : JourSemaine
+  - totalCaloriesJour : double
+  - totalProtéinesJour : double
+  - totalGlucidesJour : double
+  - totalLipidesJour : double
+}
+
+class Repas {
+  - id : Long
+  - description : String
+  - calories : double
+  - protéines : double
+  - glucides : double
+  - lipides : double
+  - heureRepas : String
+}
+
+Coach               "1"    --> "0..*" ProgrammeNutritionnel  : crée
+Client              "1"    --> "0..1" ProgrammeNutritionnel   : suit
+ProgrammeNutritionnel "1"  --> "0..*" JourNutritionnel        : composé de
+JourNutritionnel      "1"  --> "0..*" Repas                   : contient
+
+' ─── Catalogue d'Exercices ────────────────────────────────────────
+
+class CatalogueExercice {
+  - id : Long
+  - nom : String
+  - groupeMusculaire : String
+}
+
+' ─── Performance & Progression ────────────────────────────────────
+
+class PerformanceExercice {
+  - id : Long
+  - séries : int
+  - répétitions : int
+  - poidsUtilisé : double
+  - date : LocalDate
+}
+
+class EntréeProgression {
+  - id : Long
+  - dateEntrée : LocalDate
+  - poids : double
+  - masseGraisse : double
+  - masseMusculaire : double
+  - notes : String
+  - créeÀ : LocalDateTime
+}
+
+Client "1" --> "0..*" PerformanceExercice : enregistre
+Client "1" --> "0..*" EntréeProgression   : suit
+
+' ─── Témoignages ──────────────────────────────────────────────────
+
+class Témoignage {
+  - id : Long
+  - note : int
+  - commentaire : String
+  - créeÀ : LocalDateTime
+}
+
+Client "1" --> "0..*" Témoignage : rédige
+Coach  "1" --> "0..*" Témoignage : reçoit
+
+@enduml

@@ -150,7 +150,9 @@ export class LoginComponent {
     this.auth.login(this.f['email'].value!, this.f['password'].value!).subscribe({
       next: me => {
         this.loading = false;
-        if (me.userType === 'COACH') {
+        if (me.userType === 'ADMIN') {
+          this.router.navigate(['/admin/dashboard']);
+        } else if (me.userType === 'COACH') {
           this.router.navigate(['/coach/dashboard']);
         } else {
           // Clients without a coach go to discovery; the guard handles the rest
